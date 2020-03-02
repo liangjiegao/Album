@@ -12,7 +12,7 @@ create table user_info(
           last_login_ip   char(32) null default ''        comment '最后一次登录ip'
 )ENGINE=InnoDB AUTO_INCREMENT=3150 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
--- 图片信息
+-- 图片信息sd
 create table img_info(
                          id              int(11)     auto_increment primary key  comment '主键',
                          img_key         char(32)    not null unique default ''  comment '唯一键',
