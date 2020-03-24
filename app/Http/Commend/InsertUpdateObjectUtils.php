@@ -30,9 +30,9 @@ class InsertUpdateObjectUtils
 
     public function updateObject($table, $column, $val){
 
-        $insertArr = (new ObjectParse($this->_object)) -> parseObjectToArr();
+        $updateArr = (new ObjectParse($this->_object)) -> parseObjectToArr();
 
-        $re = DB::table($table) -> where($column, '=', $val) -> update ($insertArr) ;
+        $re = DB::table($table) -> where($column, '=', $val) -> update ( $updateArr ) ;
 
         if ($re === false){
             return CodeConf::DB_OPT_FAIL;

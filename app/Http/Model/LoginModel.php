@@ -83,6 +83,17 @@ class LoginModel implements ILoginModel
      */
     public function createRegCode($email) :string
     {
+
+        // 判断当前邮箱是否已经保存过验证码
+        $oldCode = Redis::get( RedisHeadConf::getHead('email_reg_code') . md5($email) );
+
+        if ( !empty($oldCode) ){
+
+            Redis::del( RedisHeadConf::getHead('email_reg_code') . md5($email) );
+
+        }
+
+
         $code = rand(100000, 999999);
 
         // 有效期5分钟
@@ -95,10 +106,10 @@ class LoginModel implements ILoginModel
 
         $email      = $requestParams['email'];
         $password   = $requestParams['password'];
-
+        Log::info($password);
         $userModel  = \App::make(IUserModel::class);
         // 验证用户
-        $userInfo = $userModel-> fetchUserInfo( 'email', $email );
+        $userInfo = $userModel-> getUserInfo( [ 'unique_key' => 'email', 'unique_val' => $email ] );
         if ( !empty($userInfo) ){
 
             // 存在用户，验证密码

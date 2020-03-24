@@ -53,6 +53,7 @@ class LoginController
         $params['password']     = "password";
 
         $requestParams  = ControllerUtil::paramsFilter($request, $params);
+
         $returnInfo     = $this->_loginModel -> login($requestParams);
 
         $code           = $returnInfo['code'];

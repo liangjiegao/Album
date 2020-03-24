@@ -29,6 +29,10 @@ class CodeConf
     const USER_UN_EXIST             = 20005;
 
     const DB_OPT_FAIL               = 30001;
+    const FILE_SAVE_FAIL            = 30002;
+    const DIR_MAKE_FAIL             = 30003;
+
+    const LOGIN_EXPIRE              = 50008;
 
     const EMAIL_SEND_FAIL           = 55001;
     const EMAIL_LINK_INVALID        = 55002;
@@ -53,7 +57,11 @@ class CodeConf
 
             // 30000 - 39999
             self::DB_OPT_FAIL               => '数据库修改失败',
+            self::FILE_SAVE_FAIL            => '文件保存失败',
+            self::DIR_MAKE_FAIL             => '目录创建失败',
 
+            // 50000 - 59999
+            self::LOGIN_EXPIRE              => '请从新登录！',
             self::EMAIL_SEND_FAIL           => '邮件发送失败',
             self::EMAIL_LINK_INVALID        => '邮件链接已失效',
             self::EMAIL_UNAVAILABLE         => '您发送的邮箱账号为异常邮箱，请检查是否输入错误后',

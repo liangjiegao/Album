@@ -24,7 +24,7 @@ class ControllerUtil
         $token                      = $request->input('token', '');
         if ( !empty( $token ) ) {
 
-            $requestParams["account"]   = UtilsModel::getAccountByToken($token);
+            $requestParams["account"]   = UtilsModel::getAccount($token);
 
         }
 

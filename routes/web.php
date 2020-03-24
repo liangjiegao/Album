@@ -15,10 +15,16 @@
 //    return view('welcome');
 //});
 
+// ------------------- 登录模块 ---------------------------
+$router->post('/login/sendRegCode',         ['uses' => 'LoginController@sendRegCode']);
+$router->post('/login/reg',                 ['uses' => 'LoginController@reg']);
+$router->post('/login/login',               ['uses' => 'LoginController@login']);
 
-$router->post('/login/sendRegCode', ['uses' => 'LoginController@sendRegCode']);
-$router->post('/login/reg', ['uses' => 'LoginController@reg']);
-$router->post('/login/login', ['uses' => 'LoginController@login']);
+// ------------------- 用户模块 ---------------------------
+$router->get('/user/getUserInfo',           ['middleware' => 'auth', 'uses' => 'UserController@getUserInfo']);
+$router->get('/user/editUser',              ['middleware' => 'auth', 'uses' => 'UserController@editUser']);
+$router->post('/user/changePassword',        ['middleware' => 'auth', 'uses' => 'UserController@changePassword']);
+$router->post('/user/changeHeadIcon',        ['middleware' => 'auth', 'uses' => 'UserController@changeHeadIcon']);
 
 
 

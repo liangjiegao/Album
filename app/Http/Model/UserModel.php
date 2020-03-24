@@ -4,8 +4,11 @@
 namespace App\Http\Model;
 
 
+use App\Http\Commend\CommendModel;
 use App\Http\Config\CodeConf;
+use App\Http\Config\PublicPath;
 use App\Http\Config\RedisHeadConf;
+use App\Http\Config\ReturnInfoConf;
 use App\Http\Model\Impl\IUserModel;
 use Illuminate\Support\Facades\DB;
 
@@ -57,12 +60,14 @@ class UserModel implements IUserModel
 
     }
 
+
+
     public function changePassword($requestParams){
 
-        $account        = $requestParams['account'];           // 账号
-        $oldPassword    = $requestParams['old_password'];      // 旧密码
-        $newPassword    = $requestParams['new_password'];      // 新密码
-        $confirmPassword= $requestParams['confirm_password'];  // 确认密码
+        $account        = $requestParams['account'];                    // 账号
+        $oldPassword    = trim($requestParams['old_password']);         // 旧密码
+        $newPassword    = trim($requestParams['new_password']);         // 新密码
+        $confirmPassword= trim($requestParams['confirm_password']);     // 确认密码
 
         // 验证新密码长度
         if ( strlen($newPassword) < 6) {
@@ -70,20 +75,40 @@ class UserModel implements IUserModel
         }
 
         // 验证新密码与确认密码是否相等
-        if ( !empty($newPassword) && $newPassword == $confirmPassword ){
+        if ( $newPassword != $confirmPassword ){
             return CodeConf::CONF_PASSWD_UN_EQUAL;
         }
-
+        // 验证新旧密码是否相等
         $md5OldPassword = UtilsModel::getSqlPassword( $oldPassword );
+        $userInfo       = $this->fetchUserInfo('account', $account);
+        if ( $userInfo['password'] != $md5OldPassword ) {
 
+            return CodeConf::LOGIN_PASSWD_MISMATCH;
 
+        }
+        $newPassword = UtilsModel::getSqlPassword($newPassword);
+        // 修改密码
+        $code = $this->doChangePassword($account, $newPassword);
 
-
+        return $code;
     }
 
-    public function fetchUserInfo( string $uniqueKey , string $uniqueVal){
+    private function doChangePassword( $account, $password ) {
 
-        $userInfo = DB::table($this->_table) -> select('*') -> where($uniqueKey, '=', $uniqueVal) ->get();
+
+        $re = DB::table($this->_table) -> where('account', '=', $account) -> update(['password' => $password]);
+
+        if ( $re === false ) {
+            return CodeConf::DB_OPT_FAIL;
+        }
+
+        return CodeConf::OPT_SUCCESS;
+    }
+
+    private function fetchUserInfo( string $uniqueKey , string $uniqueVal){
+
+        $userInfo = DB::table($this->_table) -> select('*') -> where($uniqueKey, '=', $uniqueVal) -> get();
+//        $userInfo = DB::table($this->_table) -> select('*') -> where($uniqueKey, '=', $uniqueVal) -> toSql();
 
         $userInfo = UtilsModel::changeMysqlResultToArr($userInfo);
 
@@ -95,19 +120,68 @@ class UserModel implements IUserModel
         return [];
     }
 
-    public function getUserInfo($requestParams){
+    public function getUserInfo( array $requestParams){
 
+        $uniqueKey = $requestParams['unique_key'];
+        $uniqueVal = $requestParams['unique_val'];
 
+        $userInfo = $this->fetchUserInfo($uniqueKey, $uniqueVal);
 
+        // 去除敏感字段
+        $sensitiveColumns = [
+            'id', 'last_login_ip', 'last_login_time'
+        ];
+        $userInfo = UtilsModel::clearSensitiveInfo([$userInfo], $sensitiveColumns)[0];
 
+        return $userInfo;
     }
 
 
-    public function saveFile(){
+
+    /**
+     * @inheritDoc
+     */
+    public function changeHeadIcon(array $params)
+    {
+        $account = $params['account'];
+
+        // 获取原始文件名
+        $originFileName = $_FILES["file"]["name"];
+        $file           = $_FILES["file"]["tmp_name"];
+
+        // 创建文件名
+        $fileName   = md5($originFileName . time() . rand(100000, 999999));
+        $fileFormat = strstr( $originFileName, '.'); // 后缀
+        $fileName   .= $fileFormat;
+
+        $path       = PublicPath::getPath( 'resource_head' ) ;
+
+        $userBean   = \App::make('UserBean' );
+        $userBean->setIcon( $path . $fileName );
 
 
+        $code = CommendModel::saveFile( $file, $path, $fileName );
 
+        if ( $code != CodeConf::OPT_SUCCESS ) {
+
+            return ReturnInfoConf::getReturnTemp($code);
+
+        }
+
+        // 保存数据库字段
+        $code = (new InsertUpdateObjectUtils($userBean)) -> updateObject( $this->_table, 'account', $account );
+
+        if ( $code != CodeConf::OPT_SUCCESS ) {
+
+            return ReturnInfoConf::getReturnTemp($code);
+
+        }
+
+//        $url = PublicPath::getPath( 'server_root' );
+        $url = str_replace( PublicPath::getPath( 'resource_head' ), PublicPath::getPath( 'server_root' ), $path . $fileName);
+
+        $returnInfo = ['url' => $url];
+
+        return ReturnInfoConf::getReturnTemp( $code, $returnInfo );
     }
-
-
 }

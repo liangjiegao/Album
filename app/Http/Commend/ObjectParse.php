@@ -5,9 +5,9 @@ namespace App\Http\Model;
 
 
 
-use Illuminate\Contracts\Logging\Log;
 use ReflectionClass;
 use ReflectionProperty;
+use Illuminate\Support\Facades\Log;
 
 class ObjectParse
 {
@@ -28,8 +28,9 @@ class ObjectParse
             $properties  = $r->getProperties(ReflectionProperty::IS_PRIVATE);
 
             foreach ($properties as $key => $val){
-                if ($val != null){
-                    $val->setAccessible(true);
+                $val->setAccessible(true);
+
+                if ($val->getValue($this->_object) != null){
                     $this->_parse_arr[$val->getName()] = $val->getValue($this->_object);
                 }
             }
