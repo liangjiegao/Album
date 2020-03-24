@@ -1,21 +1,70 @@
 <?php
 
 
-namespace App\Http\Model;
+namespace App\Http\Bean;
 
 
-class User
+class UserBean
 {
 
     private $id             ;
     private $account        ;
+    private $nickname       ;
     private $phone          ;
     private $email          ;
     private $birthday       ;
     private $icon           ;
     private $remark         ;
+    private $password       ;
     private $create_time    ;
     private $last_login_time;
+    private $last_login_ip  ;
+
+    /**
+     * @return mixed
+     */
+    public function getNickname()
+    {
+        return $this->nickname;
+    }
+    /**
+     * @param mixed $nickname
+     */
+    public function setNickname($nickname): void
+    {
+        $this->nickname = $nickname;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getLastLoginIp()
+    {
+        return $this->last_login_ip;
+    }
+
+    /**
+     * @param mixed $last_login_ip
+     */
+    public function setLastLoginIp($last_login_ip): void
+    {
+        $this->last_login_ip = $last_login_ip;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getPassword()
+    {
+        return $this->password;
+    }
+    /**
+     * @param mixed $password
+     */
+    public function setPassword($password): void
+    {
+        $this->password = $password;
+    }
 
     /**
      * @return mixed

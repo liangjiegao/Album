@@ -11,6 +11,9 @@ create table user_info(
           last_login_time int(11) null default 0          comment '最后一次登录时间',
           last_login_ip   char(32) null default ''        comment '最后一次登录ip'
 )ENGINE=InnoDB AUTO_INCREMENT=3150 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+ALTER TABLE user_info add column password char(32) not null default '';
+ALTER TABLE user_info add column nickname char(32) not null default '';
+alter table user_info modify nickname char(32) default '' null;
 
 -- 图片信息sd
 create table img_info(
@@ -69,3 +72,7 @@ create table comment(
                         account         char(32)        not null default ''         comment '账号',
                         create_time     int(11)         not null default 0          comment '创建时间'
 )ENGINE=InnoDB AUTO_INCREMENT=3150 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+
+alter table user_info modify birthday datetime null comment '生日';
+
