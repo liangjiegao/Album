@@ -107,12 +107,22 @@ class UserController
         return UtilsModel::getCallbackJson( $code );
     }
 
-    public function getApplyList( Request $request ){
+    public function getMyApplyList( Request $request ){
 
         $params = [];
         $requestParams  = ControllerUtil::paramsFilter( $request, $params );
 
-        $list = $this->_user_model->getApplyList( $requestParams );
+        $list = $this->_user_model->getMyApplyList( $requestParams );
+
+        return UtilsModel::getCallbackJson( CodeConf::OPT_SUCCESS, [ 'data' => [ 'list' => $list ] ] );
+    }
+
+    public function getOtherApplyList( Request $request ){
+
+        $params = [];
+        $requestParams  = ControllerUtil::paramsFilter( $request, $params );
+
+        $list = $this->_user_model->getOtherApplyList( $requestParams );
 
         return UtilsModel::getCallbackJson( CodeConf::OPT_SUCCESS, [ 'data' => [ 'list' => $list ] ] );
     }

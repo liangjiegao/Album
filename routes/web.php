@@ -33,8 +33,10 @@ $router->post('/user/changeHeadIcon',               ['middleware' => 'auth', 'us
 $router->post('/user/sendChangePasswordCheckCode',  ['middleware' => 'auth', 'uses' => 'UserController@sendChangePasswordCheckCode']);
 // 添加好友申请
 $router->post('/user/applyFriend',                  ['middleware' => 'auth', 'uses' => 'UserController@applyFriend']);
-// 获取申请列表
-$router->post('/user/getApplyList',                 ['middleware' => 'auth', 'uses' => 'UserController@getApplyList']);
+// 获取自己申请添加好友的列表
+$router->post('/user/getMyApplyList',               ['middleware' => 'auth', 'uses' => 'UserController@getMyApplyList']);
+// 获取别人申请添加自己为好友的列表
+$router->post('/user/getOtherApplyList',            ['middleware' => 'auth', 'uses' => 'UserController@getOtherApplyList']);
 // 通过申请
 $router->post('/user/optFriendApply',               ['middleware' => 'auth', 'uses' => 'UserController@optFriendApply']);
 

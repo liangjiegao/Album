@@ -405,7 +405,7 @@ class UserModel implements IUserModel
     /**
      * @inheritDoc
      */
-    public function getApplyList(array $params)
+    public function getOtherApplyList(array $params)
     {
 
         $account = $params['account'];
@@ -416,6 +416,24 @@ class UserModel implements IUserModel
                     -> select( ['relation_key', 'nickname', 'account'] )
                     -> where( 'account_friend', '=', $account )
                     -> get();
+        $applyList = UtilsModel::changeMysqlResultToArr($applyList);
+
+        return $applyList;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getMyApplyList(array $params)
+    {
+        $account = $params['account'];
+
+        // 获取申请列表
+        $applyList = DB::table( $this->_user_relation_table )
+            -> leftJoin( $this -> _user_table , $this->_user_relation_table . '.account_self', '=', $this->_user_table . '.account')
+            -> select( ['relation_key', 'nickname', 'account'] )
+            -> where( 'account_self', '=', $account )
+            -> get();
         $applyList = UtilsModel::changeMysqlResultToArr($applyList);
 
         return $applyList;

@@ -58,11 +58,18 @@ interface IUserModel
     public function applyFriend( array $params );
 
     /**
-     * 获取用户好友申请列表
+     * 获取用户添加别的好友的申请列表
      * @param array $params
      * @return mixed
      */
-    public function getApplyList( array $params );
+    public function getMyApplyList( array $params );
+
+    /**
+     * 获取别人申请自己为好友的列表
+     * @param array $params
+     * @return mixed
+     */
+    public function getOtherApplyList( array $params );
 
     /**
      * 通过好友申请
