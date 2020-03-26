@@ -44,7 +44,18 @@ class ObjectParse
 
     public function parseArrToObject($arr){
 
+        try {
+            $r = new ReflectionClass($this->_object);
+            $properties  = $r->getProperties(ReflectionProperty::IS_PRIVATE);
 
+            foreach ($properties as $key => $val){
+                $val->setAccessible(true);
+                $val->setValue( $this->_object, $arr[$val->getName()] );
+            }
+        } catch (\ReflectionException $e) {
+            Log::info($e->getMessage());
+        }
 
+        return $this->_object;
     }
 }

@@ -6,6 +6,7 @@ namespace App\Http\Model;
 
 use App\Http\Commend\CommendModel;
 use App\Http\Config\CodeConf;
+use App\Http\Config\EmailContentConf;
 use App\Http\Config\RedisHeadConf;
 use App\Http\Config\ReturnInfoConf;
 use App\Http\Model\Impl\IEmailModel;
@@ -18,21 +19,21 @@ use Illuminate\Support\Facades\DB;
 
 class LoginModel implements ILoginModel
 {
-    private $_reg_code_live     = 60 * 5;
     private $_login_live_time   = 60 * 60 * 24;
 
     public function sendRegCode($requestParams){
 
         $tagEmail   = $requestParams['tag_email'];
-        $regCode    = $this->createRegCode($tagEmail);
+        $regCode    = CommendModel::createCheckCode($tagEmail, EmailContentConf::REG);
 
 
         $emailModel = \App::make(IEmailModel::class);
 
         $params['tag_email']    = $tagEmail;
         $params['code']         = $regCode;
+        $params['type']         = EmailContentConf::REG;
 
-        $returnInfo = $emailModel->sendRegEmail($params);
+        $returnInfo = $emailModel->sendEmail($params);
 
         return $returnInfo;
     }
@@ -46,7 +47,7 @@ class LoginModel implements ILoginModel
 
         $userModel  = \App::make(IUserModel::class);
 
-        if ( CommendModel::verificationCheckCode($email, $checkCode) ) { //验证码有效
+        if ( CommendModel::verificationCheckCode($email, $checkCode, EmailContentConf::REG) ) { //验证码有效
 
             // 验证确认密码和密码是否相同
             if (strlen($password) < 6){
@@ -76,30 +77,7 @@ class LoginModel implements ILoginModel
 
     }
 
-    /**
-     * 获取注册验证码
-     * @param $email    // 注册邮箱
-     * @return string   // 返回字符串类型的验证码
-     */
-    public function createRegCode($email) :string
-    {
 
-        // 判断当前邮箱是否已经保存过验证码
-        $oldCode = Redis::get( RedisHeadConf::getHead('email_reg_code') . md5($email) );
-
-        if ( !empty($oldCode) ){
-
-            Redis::del( RedisHeadConf::getHead('email_reg_code') . md5($email) );
-
-        }
-
-
-        $code = rand(100000, 999999);
-
-        // 有效期5分钟
-        Redis::setex( RedisHeadConf::getHead('email_reg_code') . md5($email), $this->_reg_code_live, $code);
-        return  $code;
-    }
 
     public function login(array $requestParams)
     {

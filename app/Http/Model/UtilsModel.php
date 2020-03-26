@@ -52,6 +52,25 @@ class UtilsModel
         return $arr;
     }
 
+    /**
+     * 对象 转 数组
+     *
+     * @param object $obj 对象
+     * @return array
+     */
+    public static function objectToArray($obj) {
+        $obj = (array)$obj;
+        foreach ($obj as $k => $v) {
+            if (gettype($v) == 'resource') {
+                return;
+            }
+            if (gettype($v) == 'object' || gettype($v) == 'array') {
+                $obj[$k] = (array)object_to_array($v);
+            }
+        }
+
+        return $obj;
+    }
 
     public static function getIp(){
         if(getenv('HTTP_CLIENT_IP') && strcasecmp(getenv('HTTP_CLIENT_IP'), 'unknown')) {

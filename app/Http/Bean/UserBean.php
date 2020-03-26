@@ -19,6 +19,7 @@ class UserBean
     private $create_time    ;
     private $last_login_time;
     private $last_login_ip  ;
+    private $is_delete  = 0 ;
 
     /**
      * @return mixed

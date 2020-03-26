@@ -56,6 +56,8 @@ class UserController
         $params['old_password']     = "old_password";
         $params['new_password']     = "new_password";
         $params['confirm_password'] = "confirm_password";
+        $params['opt_email']        = "opt_email";
+        $params['check_code']       = "check_code";
 
 
         $requestParams  = ControllerUtil::paramsFilter($request, $params);
@@ -79,6 +81,52 @@ class UserController
         $info       = $returnInfo['info'];
         $url        = $info['url'];
         return UtilsModel::getCallbackJson( $code, ['data' => [ 'url' => $url ] ] );
+    }
+
+    public function sendChangePasswordCheckCode( Request $request ) {
+
+        $params['opt_email'] = 'opt_email';
+
+        $requestParams  = ControllerUtil::paramsFilter( $request, $params );
+
+        $returnInfo = $this->_user_model->sendChangePasswordCheckCode( $requestParams );
+
+        $code = $returnInfo['code'];
+
+        return UtilsModel::getCallbackJson( $code );
+    }
+
+    public function applyFriend( Request $request ){
+
+        $params['friend_email'] = 'friend_email';
+
+        $requestParams  = ControllerUtil::paramsFilter( $request, $params );
+
+        $code = $this->_user_model->applyFriend( $requestParams );
+
+        return UtilsModel::getCallbackJson( $code );
+    }
+
+    public function getApplyList( Request $request ){
+
+        $params = [];
+        $requestParams  = ControllerUtil::paramsFilter( $request, $params );
+
+        $list = $this->_user_model->getApplyList( $requestParams );
+
+        return UtilsModel::getCallbackJson( CodeConf::OPT_SUCCESS, [ 'data' => [ 'list' => $list ] ] );
+    }
+
+    public function optFriendApply( Request $request ){
+
+        $params['relation_key'] = 'relation_key';
+        $params['opt']          = 'opt';
+
+        $requestParams          = ControllerUtil::paramsFilter( $request, $params );
+
+        $code = $this->_user_model->optFriendApply( $requestParams );
+
+        return UtilsModel::getCallbackJson( $code );
     }
 
 }

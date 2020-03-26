@@ -14,9 +14,11 @@ class EmailBean
 
     private $_files = [];       // 文件附件
 
-    private $_form;             // 发件人邮箱
+    private $_form = '1445808283@qq.com';     // 发件人邮箱
 
-    private $_form_name;        // 发件人名
+    private $_form_name = '云相册';            // 发件人名
+
+
 
     /**
      * @return mixed

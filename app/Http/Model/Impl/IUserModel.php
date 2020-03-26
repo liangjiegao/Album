@@ -42,4 +42,34 @@ interface IUserModel
      * @return mixed
      */
     public function changeHeadIcon(array $params);
+
+    /**
+     * 发送修改密码邮箱验证码
+     * @param array $params
+     * @return mixed
+     */
+    public function sendChangePasswordCheckCode( array $params );
+
+    /**
+     * 申请添加好友
+     * @param array $params
+     * @return mixed
+     */
+    public function applyFriend( array $params );
+
+    /**
+     * 获取用户好友申请列表
+     * @param array $params
+     * @return mixed
+     */
+    public function getApplyList( array $params );
+
+    /**
+     * 通过好友申请
+     * @param array $params
+     * @return mixed
+     */
+    public function optFriendApply( array $params);
+
+
 }

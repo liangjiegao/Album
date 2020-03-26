@@ -5,6 +5,7 @@ namespace App\Http\Model;
 
 
 use App\Http\Bean\EmailBean;
+use App\Http\Config\CodeConf;
 use App\Http\Config\EmailContentConf;
 use App\Http\Config\ReturnInfoConf;
 use App\Http\Model\Impl\IEmailModel;
@@ -17,15 +18,16 @@ class EmailModel implements IEmailModel
 
 
 
-    public function sendRegEmail($requestParams){
+    public function sendEmail($requestParams){
         $emailContentConf = new EmailContentConf();
 
 
         $tagEmail   = $requestParams['tag_email'];
         $code       = $requestParams['code'];
+        $type       = $requestParams['type'];
 
-        $regTitle   = $emailContentConf -> getRegTitle();
-        $regContent = $emailContentConf -> getRegContent($code);
+        $regTitle   = $emailContentConf -> getTitle($type);
+        $regContent = $emailContentConf -> getContent($code, $type);
 
 
         $emailBean = \App::make("EmailBean");
@@ -33,11 +35,9 @@ class EmailModel implements IEmailModel
         $emailBean ->setTarEmail($tagEmail);
         $emailBean ->setTitle($regTitle);
         $emailBean ->setContent($regContent);
-        $emailBean ->setForm('1445808283@qq.com');
-        $emailBean ->setFormName('云相册');
 
         $code = $this->doSend($emailBean);
-
+        Log::info($code);
         return ReturnInfoConf::getReturnTemp($code);
     }
 
@@ -90,20 +90,19 @@ class EmailModel implements IEmailModel
 
                 // 邮箱服务器连接异常
                 Log::info("连接异常");
-                return 55007;
+                return CodeConf::EMAIL_SERVER_CONN_ERROR;
             } elseif ($code == '559') {
 
                 // 接受者邮箱有误
-                return 55004;
+                return CodeConf::EMAIL_UNAVAILABLE;
             } elseif ($code == '554') {
 
-                return 55005;
+                return CodeConf::EMAIL_CONTENT_UNAVAILABLE;
             }
 
-            return 55001;
+            return CodeConf::EMAIL_SEND_FAIL;
         }
 
-        return 10000;
-
+        return CodeConf::OPT_SUCCESS;
     }
 }

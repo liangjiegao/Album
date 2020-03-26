@@ -25,6 +25,12 @@ class RedisHeadConf
             // 登录的token
             'login_token'           => 'login_token_',
 
+            // 修改密码
+            'email_change_password_code'           => 'email_change_password_code_',
+
+            // 用户关系
+            'relation_sort'           => 'relation_sort_',
+
 
         ];
 
