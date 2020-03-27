@@ -84,12 +84,10 @@ class LoginModel implements ILoginModel
 
         $email      = $requestParams['email'];
         $password   = $requestParams['password'];
-        Log::info($password);
         $userModel  = \App::make(IUserModel::class);
         // 验证用户
         $userInfo = $userModel-> getUserInfo( [ 'unique_key' => 'email', 'unique_val' => $email ] );
         if ( !empty($userInfo) ){
-
             // 存在用户，验证密码
             if ( UtilsModel::getSqlPassword($password) == $userInfo['password'] ){
 

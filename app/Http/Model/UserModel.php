@@ -117,7 +117,6 @@ class UserModel implements IUserModel
     private function fetchUserInfo( string $uniqueKey , string $uniqueVal){
 
         $userInfo = DB::table($this->_user_table) -> select('*') -> where($uniqueKey, '=', $uniqueVal) -> get();
-//        $userInfo = DB::table($this->_user_table) -> select('*') -> where($uniqueKey, '=', $uniqueVal) -> toSql();
 
         $userInfo = UtilsModel::changeMysqlResultToArr($userInfo);
 

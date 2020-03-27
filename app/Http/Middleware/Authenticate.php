@@ -12,6 +12,7 @@ use App\Http\Model\UtilsModel;
 use Closure;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Contracts\Auth\Factory as Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redis;
 
 class Authenticate
@@ -59,7 +60,6 @@ class Authenticate
         $loginTokenHead   = RedisHeadConf::getHead('login_token');
 
         $tKey = $loginTokenHead . $token;
-
         return Redis::exists($tKey);
     }
 

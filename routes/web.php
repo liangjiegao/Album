@@ -48,7 +48,16 @@ $router->post('/upload/deleteDir',                    ['middleware' => 'auth', '
 $router->post('/upload/deleteImg',                    ['middleware' => 'auth', 'uses' => 'UploadController@deleteImg']);
 
 /** ------------------------------------ 工作空间 ------------------------------------------------ **/
-$router->post('/workspace/getWorkspace',                    ['middleware' => 'auth', 'uses' => 'WorkspaceController@getWorkspace']);
+$router->post('/workspace/getWorkspace',              ['middleware' => 'auth', 'uses' => 'WorkspaceController@getWorkspace']);
+
+/** ------------------------------------ 分享 ----------------------------------------------------- **/
+$router->post('/share/createShare',                   ['middleware' => 'auth', 'uses' => 'ShareController@createShare']);
+$router->get('/share/getShareList',                   ['middleware' => 'auth', 'uses' => 'ShareController@getShareList']);
+$router->post('/share/deleteShare',                   ['middleware' => 'auth', 'uses' => 'ShareController@deleteShare']);
+$router->post('/share/upShare',                       ['middleware' => 'auth', 'uses' => 'ShareController@upShare']);
+$router->post('/share/commentShare',                  ['middleware' => 'auth', 'uses' => 'ShareController@commentShare']);
+$router->get('/share/getCommentList',                 ['middleware' => 'auth', 'uses' => 'ShareController@getCommentList']);
+
 
 
 // 关系绑定， 依赖接口而不是依赖对象
@@ -57,10 +66,14 @@ App::bind(App\Http\Model\Impl\IEmailModel::class ,      App\Http\Model\EmailMode
 App::bind(App\Http\Model\Impl\IUserModel::class ,       App\Http\Model\UserModel::class);
 App::bind(App\Http\Model\Impl\IUploadModel::class ,     App\Http\Model\UploadModel::class);
 App::bind(App\Http\Model\Impl\IWorkspaceModel::class ,  App\Http\Model\WorkspaceModel::class);
+App::bind(App\Http\Model\Impl\IShareModel::class ,      App\Http\Model\ShareModel::class);
 
 App::bind("UserBean" ,                                  App\Http\Bean\UserBean::class);
 App::bind("EmailBean" ,                                 App\Http\Bean\EmailBean::class);
 App::bind("ImageBean" ,                                 App\Http\Bean\ImageBean::class);
 App::bind("ImageDirBean" ,                              App\Http\Bean\ImageDirBean::class);
 App::bind("UserRelationBean" ,                          App\Http\Bean\UserRelationBean::class);
+App::bind("ShareInfoBean" ,                             App\Http\Bean\ShareInfoBean::class);
+App::bind("DBOptBean" ,                                 App\Http\Bean\DBOptBean::class);
+App::bind("CommentBean" ,                               App\Http\Bean\CommentBean::class);
 

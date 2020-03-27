@@ -31,6 +31,9 @@ class RedisHeadConf
             // 用户关系
             'relation_sort'           => 'relation_sort_',
 
+            //分享
+            'share_info_sort'           => 'share_info_sort_',
+
 
         ];
 
