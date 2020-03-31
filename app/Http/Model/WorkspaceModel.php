@@ -4,6 +4,7 @@
 namespace App\Http\Model;
 
 
+use App\Http\Commend\ImageKeyUrlMapUtils;
 use App\Http\Config\CodeConf;
 use App\Http\Config\ReturnInfoConf;
 use App\Http\Model\Impl\IWorkspaceModel;
@@ -27,26 +28,29 @@ class WorkspaceModel implements IWorkspaceModel
         $sqlDir = DB::table( $this->_dir_table )
             -> select(['id', 'name', 'pid'])
             -> where( 'account', '=', $account )
-            -> where( 'is_delete', '=', 0 );
-
-        if ( $dirId != 0 ){
-            $sqlDir    = $sqlDir -> where( 'id', '=', $dirId );
-        }
+            -> where( 'is_delete', '=', 0 )
+            -> where( 'pid', '=', $dirId );
+//        if ( $dirId != 0 ){
+//            $sqlDir    = $sqlDir -> where( 'id', '=', $dirId );
+//        }
         $dirList = $sqlDir-> orderBy( 'create_time', 'desc' ) -> get();
 
         $dirList = UtilsModel::changeMysqlResultToArr($dirList);
 
         // 获取图片
         $sqlImg = DB::table( $this->_img_table )
-            -> select(['id', 'img_name', 'dir_id', 'path' ])
+            -> select(['id', 'img_name', 'dir_id', 'path', 'img_key' ])
             -> where( 'account', '=', $account )
-            -> where( 'is_delete', '=', 0 );
-        if ( $dirId != 0 ) {
-            $sqlImg = $sqlImg -> where( 'dir_id', '=', $dirId );
-
-        }
+            -> where( 'is_delete', '=', 0 )
+            -> where( 'dir_id', '=', $dirId );
+//        if ( $dirId != 0 ) {
+//            $sqlImg = $sqlImg -> where( 'dir_id', '=', $dirId );
+//
+//        }
         $imgList = $sqlImg -> orderBy( 'create_time', 'desc' ) -> get();
         $imgList = UtilsModel::changeMysqlResultToArr($imgList);
+
+        $imgList = ImageKeyUrlMapUtils::mapUrlByImgKey( $imgList, [ 'img_key' => 'url' ] );
 
         $list = [ 'img' => $imgList, 'dir' => $dirList ];
 

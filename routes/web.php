@@ -24,7 +24,7 @@ $router->post('/login/login',               ['uses' => 'LoginController@login'])
 // 获取用户信息
 $router->get('/user/getUserInfo',                   ['middleware' => 'auth', 'uses' => 'UserController@getUserInfo']);
 // 编辑用户信息
-$router->get('/user/editUser',                      ['middleware' => 'auth', 'uses' => 'UserController@editUser']);
+$router->post('/user/editUser',                      ['middleware' => 'auth', 'uses' => 'UserController@editUser']);
 // 修改用户密码
 $router->post('/user/changePassword',               ['middleware' => 'auth', 'uses' => 'UserController@changePassword']);
 // 修改用户头像
@@ -48,7 +48,7 @@ $router->post('/upload/deleteDir',                    ['middleware' => 'auth', '
 $router->post('/upload/deleteImg',                    ['middleware' => 'auth', 'uses' => 'UploadController@deleteImg']);
 
 /** ------------------------------------ 工作空间 ------------------------------------------------ **/
-$router->post('/workspace/getWorkspace',              ['middleware' => 'auth', 'uses' => 'WorkspaceController@getWorkspace']);
+$router->get('/workspace/getWorkspace',              ['middleware' => 'auth', 'uses' => 'WorkspaceController@getWorkspace']);
 
 /** ------------------------------------ 分享 ----------------------------------------------------- **/
 $router->post('/share/createShare',                   ['middleware' => 'auth', 'uses' => 'ShareController@createShare']);

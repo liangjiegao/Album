@@ -29,7 +29,7 @@ class UserInfoMapUtils
 
             }
         }
-
+        \Log::info($fromAccount);
         // 获取用户数据
         $userInfoList = self::getUserInfoBatch( $fromAccount );
 
@@ -67,4 +67,70 @@ class UserInfoMapUtils
 
         return $userInfo;
     }
+
+    public static function mapNameToAccount( array $list, string $column , string $columnType = 'json', string $columnData = 'array' ){
+
+        // 提取账号
+        $accounts = [];
+        foreach ($list as &$item) {
+
+            if ( isset( $item[$column] ) ){
+
+                if ( $columnType == 'json' ){
+
+                    if ( $columnData == 'array' ){
+
+                        $info           = json_decode($item[$column]);
+                        $item[$column]  = $info;
+                        $accounts       = array_merge($info , $accounts);
+
+                    }
+
+
+                }
+
+
+            }
+
+        }
+        \Log::info($accounts);
+        $userInfoList = self::getUserInfoBatch( $accounts );
+
+        foreach ($list as &$item) {
+
+            if ( isset( $item[$column] ) ){
+
+
+                if ( $columnType == 'json' ){
+
+                    if ( $columnData == 'array' ){
+                        $userInfos = [];
+
+                        foreach ($item[$column] as $account) {
+
+                            foreach ($userInfoList as $userInfo) {
+
+                                if ( isset( $userInfo['account'] ) && $userInfo['account'] == $account ){
+
+                                    $userInfos[] = $userInfo;
+
+                                }
+
+                            }
+
+                        }
+                        $item[$column] = $userInfos;
+
+                    }
+                }
+
+
+
+            }
+
+        }
+
+        return $list;
+    }
+
 }

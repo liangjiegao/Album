@@ -42,6 +42,7 @@ class CodeConf
     const ACCEPT_APPLY_SUCCESS      = 20017;
     const DATA_TOO_LONG             = 20018;
     const SHARE_NON_EXISTENT        = 20019;
+    const ALREADY_UP                = 20020;
 
 
     const DB_OPT_FAIL               = 30001;
@@ -88,6 +89,7 @@ class CodeConf
             self::ACCEPT_APPLY_SUCCESS      => '成功接受好友申请',
             self::DATA_TOO_LONG             => '文字超出长度限制',
             self::SHARE_NON_EXISTENT        => '该分享不存在',
+            self::ALREADY_UP                => '你已经点过赞了！',
 
             // 30000 - 39999
             self::DB_OPT_FAIL               => '数据库修改失败',

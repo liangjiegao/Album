@@ -5,6 +5,7 @@ namespace App\Http\Model;
 
 
 use App\Http\Bean\DBOptBean;
+use App\Http\Commend\CommentInfoMap;
 use App\Http\Commend\ImageKeyUrlMapUtils;
 use App\Http\Commend\UserInfoMapUtils;
 use App\Http\Config\CodeConf;
@@ -117,6 +118,7 @@ class ShareModel implements IShareModel
         $page       = empty( $page )    | $page < 0     ? 0     : $page;
         $count      = empty( $count )   | $count < 0    ? 10    : $count;
 
+
         $dbOptBean  = \App::make( "DBOptBean" );
         $dbOptBean->setPage( $page );
         $dbOptBean->setCount( $count );
@@ -146,13 +148,14 @@ class ShareModel implements IShareModel
         $sqlGetShare            = "select * from {$shareTable} 
                                     where 
                                           (share_group like :user or share_type = 1 or share_type = 2 ) 
-                                        and account in ($sqlGetFriend)
-                                        and id_delete = 0
+                                        and (account in ($sqlGetFriend) or account = :account)
+                                        and is_delete = 0
                                     order by create_time desc
                                     limit {$optBean->getPage()}, {$optBean->getCount()}";
 
-        $selectParams['user']         = $account;
-        $selectParams['account_self'] = $account;
+        $selectParams['user']           = $account;
+        $selectParams['account_self']   = $account;
+        $selectParams['account']        = $account;
 
         $list = DB::select( $sqlGetShare, $selectParams );
 
@@ -164,12 +167,16 @@ class ShareModel implements IShareModel
         ];
         $list = UserInfoMapUtils::mapUserInfoByAccount( $list, $mapParams );
 
+        $list = UserInfoMapUtils::mapNameToAccount( $list, 'up_account', 'json', 'array' );
+
         // 图片url映射
         $mapParams = [
             'img_key' => 'url'
         ];
         $list = ImageKeyUrlMapUtils::mapUrlByImgKey( $list, $mapParams );
 
+        // 评论映射
+        $list = CommentInfoMap::mapCommentInfoToShare( $list, 'share_key' );
 
         $sensitiveColumns = [
             'id', 'share_group', 'addr', 'is_delete', 'share_type'
@@ -184,6 +191,7 @@ class ShareModel implements IShareModel
         $list = DB::table( $this->_share_info_table )
                 -> select( ["share_key", "account", "img_key", "info", "create_time", "up_account", "share_type"] )
                 -> where( 'share_type', '=', 2 )
+                -> where( 'is_delete', '=', 0 )
                 -> orderBy( 'create_time', 'desc' )
                 -> forPage( $optBean->getPage(), $optBean->getCount() )
                 -> get();
@@ -216,6 +224,16 @@ class ShareModel implements IShareModel
             $upAccount = json_decode(  $upAccount, true );
 
         }
+
+        // 判断是否已经点赞
+        foreach ($upAccount as $getAccount) {
+            if ( $account == $getAccount ){
+
+                return CodeConf::ALREADY_UP;
+
+            }
+        }
+
         $upAccount[] = $account;
         $shareBean->setUpAccount( json_encode($upAccount) );
 

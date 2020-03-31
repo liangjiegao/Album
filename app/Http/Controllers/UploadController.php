@@ -4,6 +4,7 @@
 namespace App\Http\Controllers;
 
 
+use App\Http\Config\CodeConf;
 use App\Http\Model\Impl\IUploadModel;
 use App\Http\Model\UtilsModel;
 use Illuminate\Http\Request;
@@ -23,9 +24,15 @@ class UploadController
 
         $requestParams      = ControllerUtil::paramsFilter($request, $params);
 
-        $code               = $this->_upload_model->uploadImg($requestParams);
+        $returnInfo               = $this->_upload_model->uploadImg($requestParams);
+        $code   = $returnInfo['code'];
+        $url    = '';
+        if ( $code == CodeConf::OPT_SUCCESS ){
 
-        return UtilsModel::getCallbackJson($code);
+            $url = $returnInfo['info']['url'];
+        }
+
+        return UtilsModel::getCallbackJson($code, [ 'data' => [ 'url' => $url ] ]);
 
     }
 

@@ -8,6 +8,7 @@ use App\Http\Commend\CommendModel;
 use App\Http\Config\CodeConf;
 use App\Http\Config\PublicPath;
 use App\Http\Config\RedisHeadConf;
+use App\Http\Config\ReturnInfoConf;
 use App\Http\Model\Impl\IUploadModel;
 use App\Http\Model\Impl\IUserModel;
 use Illuminate\Support\Facades\DB;
@@ -20,13 +21,13 @@ class UploadModel implements IUploadModel
     /**
      * @inheritDoc
      */
-    public function uploadImg(array $params): string
+    public function uploadImg(array $params): array
     {
         $account    = $params['account'];
         $dirId      = $params['dir_id'];
 
         if ( !$this->checkDirIsUser( $dirId, $account ) && $dirId != 0 ) {
-            return CodeConf::DIR_NOT_EXIST;
+            return ReturnInfoConf::getReturnTemp(CodeConf::DIR_NOT_EXIST);
         }
 
         $files  = is_array($_FILES["file"]["tmp_name"]) ? $_FILES["file"]["tmp_name"]   : [$_FILES["file"]["tmp_name"]] ;
@@ -36,10 +37,11 @@ class UploadModel implements IUploadModel
 
         if ( !is_array( $files ) ) {
 
-            return CodeConf::PARAMS_UNAVAILABLE;
+            return ReturnInfoConf::getReturnTemp(CodeConf::PARAMS_UNAVAILABLE);
 
         }
-
+        $path       = '';
+        $fileName   = '';
         $savePaths  = [];
         $saveObj    = [];
         foreach ($files as $index => $file) {
@@ -65,11 +67,11 @@ class UploadModel implements IUploadModel
                 // 如果删除失败，则返回系统异常
                 if ( $delCode != CodeConf::OPT_SUCCESS ) {
 
-                    return CodeConf::SYSTEM_EXCEPTION;
+                    return ReturnInfoConf::getReturnTemp(CodeConf::SYSTEM_EXCEPTION);
 
                 }
 
-                return CodeConf::FILE_SAVE_FAIL;
+                return ReturnInfoConf::getReturnTemp(CodeConf::FILE_SAVE_FAIL);
             }
             $savePaths[]= $path . $fileName;
 
@@ -100,15 +102,15 @@ class UploadModel implements IUploadModel
             // 如果删除失败，则返回系统异常
             if ( $delCode != CodeConf::OPT_SUCCESS ) {
 
-                return CodeConf::SYSTEM_EXCEPTION;
+                return ReturnInfoConf::getReturnTemp(CodeConf::SYSTEM_EXCEPTION);
 
             }
 
-            return CodeConf::DB_OPT_FAIL;
+            return ReturnInfoConf::getReturnTemp(CodeConf::DB_OPT_FAIL);
         }
 
         //操作成功
-        return CodeConf::OPT_SUCCESS;
+        return ReturnInfoConf::getReturnTemp(CodeConf::OPT_SUCCESS, ['url' => $path . '/' . $fileName]);
     }
 
     private function checkDirIsUser( $dirId, $account ) {

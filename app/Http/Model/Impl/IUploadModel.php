@@ -26,7 +26,7 @@ interface IUploadModel
      * @param array $params
      * @return string
      */
-    public function uploadImg( array $params ) : string;
+    public function uploadImg( array $params ) : array ;
 
     /**
      * 删除图片

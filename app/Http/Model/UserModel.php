@@ -52,6 +52,7 @@ class UserModel implements IUserModel
 
 
         $userBean->setPhone($requestParams['phone']);
+        $userBean->setAccount($requestParams['account']);
         $userBean->setEmail($requestParams['email']);
         $userBean->setBirthday(date($requestParams['birthday']));
         $userBean->setNickname($requestParams['nickname']);
@@ -69,15 +70,16 @@ class UserModel implements IUserModel
     public function changePassword($requestParams){
 
         $account        = $requestParams['account'];                    // 账号
-        $optEmail       = $requestParams['opt_email'];               // 操作邮箱
+//        $optEmail       = $requestParams['opt_email'];               // 操作邮箱
         $oldPassword    = trim($requestParams['old_password']);         // 旧密码
         $newPassword    = trim($requestParams['new_password']);         // 新密码
         $confirmPassword= trim($requestParams['confirm_password']);     // 确认密码
-        $checkCode      = trim($requestParams['check_code']);           // 邮箱验证码
+//        $checkCode      = trim($requestParams['check_code']);           // 邮箱验证码
 
-        if ( !CommendModel::verificationCheckCode($optEmail, $checkCode, EmailContentConf::CH_PASSWORD) ) { // 验证码无效
-            return CodeConf::CHECK_CODE_INVALID;
-        }
+//        if ( !CommendModel::verificationCheckCode($optEmail, $checkCode, EmailContentConf::CH_PASSWORD) ) { // 验证码无效
+//            return CodeConf::CHECK_CODE_INVALID;
+//        }
+        \Log::info($newPassword);
         // 验证新密码长度
         if ( strlen($newPassword) < 6) {
             return CodeConf::PASSWORD_LEN_TOO_SHORT;
@@ -186,7 +188,7 @@ class UserModel implements IUserModel
         }
 
 //        $url = PublicPath::getPath( 'server_root' );
-        $url = str_replace( PublicPath::getPath( 'resource_head' ), PublicPath::getPath( 'server_root' ), $path . $fileName);
+        $url = str_replace( PublicPath::getPath( 'resource_head' ), PublicPath::getPath( 'server_root' ) . 'head/', $path . $fileName);
 
         $returnInfo = ['url' => $url];
 
