@@ -21,6 +21,7 @@ class WorkspaceController
     public function getWorkspace(Request $request)
     {
         $params['dir_id']       = "dir_id";
+        $params['keyword']      = "keyword";
 
 
         $requestParams  = ControllerUtil::paramsFilter($request, $params);

@@ -32,6 +32,21 @@ class LoginController
 
     }
 
+    public function sendCPCode(Request $request){
+
+        $params['tag_email']    = "tag_email";
+
+
+        $requestParams  = ControllerUtil::paramsFilter($request, $params);
+        $returnInfo     = $this->_loginModel -> sendCPCode($requestParams);
+
+        $code = $returnInfo['code'];
+        return UtilsModel::getCallbackJson($code);
+
+    }
+
+
+
     public function reg(Request $request){
 
         $params['email']        = "email";
@@ -64,6 +79,20 @@ class LoginController
         }
 
         return UtilsModel::getCallbackJson($code, ['data' => ['token' => $token]]);
+
+    }
+
+    public function changePassword(Request $request) {
+
+        $params['email']        = "email";
+        $params['password']     = "password";
+        $params['check_code']   = "check_code";
+
+        $requestParams  = ControllerUtil::paramsFilter($request, $params);
+
+        $code     = $this->_loginModel -> changePassword($requestParams);
+
+        return UtilsModel::getCallbackJson($code);
 
     }
 

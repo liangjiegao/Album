@@ -43,6 +43,8 @@ class CodeConf
     const DATA_TOO_LONG             = 20018;
     const SHARE_NON_EXISTENT        = 20019;
     const ALREADY_UP                = 20020;
+    const UPLOAD_FILE_EMPTY         = 20021;
+    const EMAIL_ALREADY_REG         = 20022;
 
 
     const DB_OPT_FAIL               = 30001;
@@ -90,6 +92,8 @@ class CodeConf
             self::DATA_TOO_LONG             => '文字超出长度限制',
             self::SHARE_NON_EXISTENT        => '该分享不存在',
             self::ALREADY_UP                => '你已经点过赞了！',
+            self::UPLOAD_FILE_EMPTY         => '您没有上传任何文件！',
+            self::EMAIL_ALREADY_REG         => '该邮箱已被注册！',
 
             // 30000 - 39999
             self::DB_OPT_FAIL               => '数据库修改失败',

@@ -439,4 +439,32 @@ class UserModel implements IUserModel
 
         return $applyList;
     }
+
+
+    /**
+     * @inheritDoc
+     */
+    public function getFriendList(array $params)
+    {
+        $account = $params['account'];
+
+        $selectParams['account_self'] = $account;
+
+        $subSQL = "select account_friend from user_relation where account_self = :account_self and is_pass = 1 and is_delete = 0";
+
+        $select = "nickname, email, icon, remark";
+        $sql    = "select {$select} from user_relation left join user_info on user_relation.account_self = user_info.account 
+                    where account_self in ({$subSQL}) and is_pass = 1 and user_relation.is_delete = 0";
+
+        $list   = DB::select( $sql , $selectParams );
+        $list   = UtilsModel::changeMysqlResultToArr( $list );
+
+        $formatColumns = [
+            'icon' => 'icon'
+        ];
+
+        $list   = CommendModel::pathFormatToUrl( $list, $formatColumns ) ;
+
+        return $list;
+    }
 }

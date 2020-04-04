@@ -20,6 +20,7 @@ use Illuminate\Support\Facades\DB;
 class LoginModel implements ILoginModel
 {
     private $_login_live_time   = 60 * 60 * 24;
+    private $_user_table        = 'user_info';
 
     public function sendRegCode($requestParams){
 
@@ -38,6 +39,23 @@ class LoginModel implements ILoginModel
         return $returnInfo;
     }
 
+    public function sendCPCode(array $params)
+    {
+        $tagEmail   = $params['tag_email'];
+        $cpCode    = CommendModel::createCheckCode($tagEmail, EmailContentConf::CH_PASSWORD);
+
+
+        $emailModel = \App::make(IEmailModel::class);
+
+        $params['tag_email']    = $tagEmail;
+        $params['code']         = $cpCode;
+        $params['type']         = EmailContentConf::CH_PASSWORD;
+
+        $returnInfo = $emailModel->sendEmail($params);
+
+        return $returnInfo;
+    }
+
     public function reg($requestParams){
 
         $email      = $requestParams['email'];
@@ -45,7 +63,7 @@ class LoginModel implements ILoginModel
         $confirm    = $requestParams['confirm'];
         $password   = $requestParams['password'];
 
-        $userModel  = \App::make(IUserModel::class);
+//        $userModel  = \App::make(IUserModel::class);
 
         if ( CommendModel::verificationCheckCode($email, $checkCode, EmailContentConf::REG) ) { //验证码有效
 
@@ -55,6 +73,18 @@ class LoginModel implements ILoginModel
             }
             if ($confirm != $password){
                 return ReturnInfoConf::getReturnTemp(CodeConf::CONF_PASSWD_UN_EQUAL);
+            }
+
+            // 验证用户是否存在
+            $params['unique_key'] = 'email';
+            $params['unique_val'] = $email;
+            $userModel  = \App::make(IUserModel::class);
+            $userInfo   = $userModel->getUserInfo( $params );
+
+            if ( !empty( $userInfo ) ){
+
+                return ReturnInfoConf::getReturnTemp(CodeConf::EMAIL_ALREADY_REG);
+
             }
 
             //创建用户
@@ -76,7 +106,6 @@ class LoginModel implements ILoginModel
         }
 
     }
-
 
 
     public function login(array $requestParams)
@@ -122,4 +151,52 @@ class LoginModel implements ILoginModel
 
         return $token;
     }
+
+
+    public function changePassword( array $params )
+    {
+
+        $email      =   $params['email'];
+        $checkCode  =   $params['check_code'];
+        $password   =   $params['password'];
+        Log::info($password);
+        if ( CommendModel::verificationCheckCode($email, $checkCode, EmailContentConf::CH_PASSWORD) ) { //验证码有效
+
+            $userModel = \App::make( IUserModel::class );
+
+            $getParams = [
+                'unique_key' => 'email',
+                'unique_val' => $email,
+            ];
+
+            $userInfo       = $userModel->getUserInfo( $getParams );
+
+            if ( empty( $userInfo ) ){
+
+                return CodeConf::USER_UN_EXIST;
+
+            }
+
+            $newPassword    = UtilsModel::getSqlPassword($password);
+            Log::info($newPassword);
+            $re = DB::table($this->_user_table)
+                    -> where('email', '=', $email )
+                    -> update(['password' => $newPassword]);
+
+            if ( $re === false ) {
+                return CodeConf::DB_OPT_FAIL;
+            }
+
+            // 删除缓存的验证码
+            Redis::del( RedisHeadConf::getHead('email_change_password_code') . md5($email) );
+
+        }else{
+            return CodeConf::CHECK_CODE_INVALID;
+        }
+
+
+        return CodeConf::OPT_SUCCESS;
+
+    }
+
 }

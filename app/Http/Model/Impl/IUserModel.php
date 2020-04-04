@@ -78,5 +78,11 @@ interface IUserModel
      */
     public function optFriendApply( array $params);
 
+    /**
+     * 获取好友列表
+     * @param array $params
+     * @return mixed
+     */
+    public function getFriendList( array $params );
 
 }

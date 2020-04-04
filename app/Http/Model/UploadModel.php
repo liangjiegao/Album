@@ -30,6 +30,12 @@ class UploadModel implements IUploadModel
             return ReturnInfoConf::getReturnTemp(CodeConf::DIR_NOT_EXIST);
         }
 
+        if ( empty( $_FILES ) ){
+
+            return ReturnInfoConf::getReturnTemp(CodeConf::UPLOAD_FILE_EMPTY);
+
+        }
+
         $files  = is_array($_FILES["file"]["tmp_name"]) ? $_FILES["file"]["tmp_name"]   : [$_FILES["file"]["tmp_name"]] ;
         $errors = is_array($_FILES["file"]["error"])    ? $_FILES["file"]["error"]      : [$_FILES["file"]["error"]]    ;
         $sizes  = is_array($_FILES["file"]["size"])     ? $_FILES["file"]["size"]       : [$_FILES["file"]["size"]]     ;

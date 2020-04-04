@@ -6,14 +6,18 @@ namespace App\Http\Commend;
 
 use App\Http\Config\CodeConf;
 use App\Http\Config\EmailContentConf;
+use App\Http\Config\PublicPath;
 use App\Http\Config\RedisHeadConf;
+use App\Http\Model\UtilsModel;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Redis;
 
 class CommendModel
 {
-    const CHECK_CODE_LIVE     = 60 * 5;
-
+    const CHECK_CODE_LIVE   = 60 * 5;
+    const IMG_TAG_TABLE     = 'img_tag';
+    const TAG_TABLE         = 'tag';
 
     public static function verificationCheckCode($email, $code, $type = ''){
 
@@ -110,5 +114,36 @@ class CommendModel
         return  $code;
     }
 
+    public static function pathFormatToUrl( array $list, array $columns ){
+
+        foreach ($list as &$item) {
+
+            foreach ($columns as $from => $to ) {
+
+                if ( isset( $item[$from] ) ){
+
+                    $item[$to] = str_replace( PublicPath::getPath( 'resource_head' ), PublicPath::getPath( 'server_root' ) . 'head/', $item[$from]);;
+
+                }
+
+            }
+
+        }
+
+        return $list;
+    }
+
+    public static function getTagImgKey( $tabInfo, $keyword ){
+
+        $imgKeys    = DB::table( self::IMG_TAG_TABLE )
+            -> leftJoin( self::TAG_TABLE, self::IMG_TAG_TABLE . '.tag_key', '=',  self::TAG_TABLE . '.tag_key')
+            -> select( ['img_key'] )
+            -> where( 'name', 'like', '%' . $tabInfo . '%' )
+            -> where( 'name', 'like', '%' . $keyword . '%' )
+            -> get();
+        $imgKeys    = UtilsModel::changeMysqlResultToArr($imgKeys);
+
+        return array_column($imgKeys, 'img_key');
+    }
 
 }

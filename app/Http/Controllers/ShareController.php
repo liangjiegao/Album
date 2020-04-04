@@ -45,7 +45,7 @@ class ShareController
         $requestParams  = ControllerUtil::paramsFilter($request, $params);
 
         $list     = $this->_shareModel -> getShareList($requestParams);
-
+        Log::info($list);
         return UtilsModel::getCallbackJson(CodeConf::OPT_SUCCESS, [ 'data' => [ 'list' => $list ] ] );
 
     }
@@ -107,4 +107,18 @@ class ShareController
 
     }
 
+    public function getWorldImgList( Request $request ) {
+
+        $params['page']             = 'page';
+        $params['count']            = 'count';
+        $params['tab_info']         = 'tab_info';
+        $params['keyword']          = 'keyword';
+
+        $requestParams  = ControllerUtil::paramsFilter($request, $params);
+
+        $list     = $this->_shareModel -> getWorldImgList($requestParams);
+
+        return UtilsModel::getCallbackJson( CodeConf::OPT_SUCCESS, [ 'data' => [ 'list' => $list ] ] );
+
+    }
 }

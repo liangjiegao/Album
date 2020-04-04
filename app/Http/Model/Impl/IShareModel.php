@@ -47,4 +47,12 @@ interface IShareModel
      * @return mixed
      */
     public function getCommentList( array $params );
+
+    /**
+     * 获取全部分享的图片
+     * @param array $params
+     * @return mixed
+     */
+    public function getWorldImgList( array $params);
+
 }

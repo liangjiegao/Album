@@ -139,4 +139,15 @@ class UserController
         return UtilsModel::getCallbackJson( $code );
     }
 
+    public function getFriendList( Request $request ){
+
+        $params = [];
+
+        $requestParams          = ControllerUtil::paramsFilter( $request, $params );
+
+        $list = $this->_user_model->getFriendList( $requestParams );
+
+        return UtilsModel::getCallbackJson( CodeConf::OPT_SUCCESS, [ 'data' => [ 'list' => $list ] ] );
+    }
+
 }

@@ -5,8 +5,9 @@ namespace App\Http\Model;
 
 
 use App\Http\Bean\DBOptBean;
+use App\Http\Commend\CommendModel;
 use App\Http\Commend\CommentInfoMap;
-use App\Http\Commend\ImageKeyUrlMapUtils;
+use App\Http\Commend\ImageInfoMapUtils;
 use App\Http\Commend\UserInfoMapUtils;
 use App\Http\Config\CodeConf;
 use App\Http\Config\RedisHeadConf;
@@ -17,9 +18,11 @@ use Illuminate\Support\Facades\DB;
 class ShareModel implements IShareModel
 {
 
-    private $_share_info_table = 'share_info';
-    private $_relation_table = 'user_relation';
-    private $_comment_table = 'comment';
+    private $_share_info_table  = 'share_info';
+    private $_relation_table    = 'user_relation';
+    private $_comment_table     = 'comment';
+    private $_img_table         = 'img_info';
+
 
     /**
      * @inheritDoc
@@ -124,17 +127,39 @@ class ShareModel implements IShareModel
         $dbOptBean = \App::make("DBOptBean");
         $dbOptBean->setPage($page);
         $dbOptBean->setCount($count);
-
+        $list = [];
         if ($listType == 'friend') {
 
-            return $this->getFriendShare($account, $dbOptBean);
+            $list = $this->getFriendShare($account, $dbOptBean);
 
         } elseif ($listType == 'world') {
 
-            return $this->getWorldShare($dbOptBean);
+            $list = $this->getWorldShare($dbOptBean);
         }
 
-        return [];
+        // 映射用户信息
+        $mapParams = [
+            'account' => 'share_user_info'
+        ];
+        $list = UserInfoMapUtils::mapUserInfoByAccount($list, $mapParams);
+
+        $list = UserInfoMapUtils::mapNameToAccount($list, 'up_account', 'json', 'array');
+
+        // 图片url映射
+        $mapParams = [
+            'img_key' => 'url'
+        ];
+        $list = ImageInfoMapUtils::mapUrlByImgKey($list, $mapParams);
+
+        // 评论映射
+        $list = CommentInfoMap::mapCommentInfoToShare($list, 'share_key');
+
+        $sensitiveColumns = [
+            'id', 'share_group', 'addr', 'is_delete', 'share_type'
+        ];
+        $list = UtilsModel::clearSensitiveInfo($list, $sensitiveColumns);
+
+        return $list;
     }
 
     public function getFriendShare(string $account, DBOptBean $optBean)
@@ -164,27 +189,7 @@ class ShareModel implements IShareModel
 
         $list = UtilsModel::changeMysqlResultToArr($list);
 
-        // 映射用户信息
-        $mapParams = [
-            'account' => 'share_user_info'
-        ];
-        $list = UserInfoMapUtils::mapUserInfoByAccount($list, $mapParams);
 
-        $list = UserInfoMapUtils::mapNameToAccount($list, 'up_account', 'json', 'array');
-
-        // 图片url映射
-        $mapParams = [
-            'img_key' => 'url'
-        ];
-        $list = ImageKeyUrlMapUtils::mapUrlByImgKey($list, $mapParams);
-
-        // 评论映射
-        $list = CommentInfoMap::mapCommentInfoToShare($list, 'share_key');
-
-        $sensitiveColumns = [
-            'id', 'share_group', 'addr', 'is_delete', 'share_type'
-        ];
-        $list = UtilsModel::clearSensitiveInfo($list, $sensitiveColumns);
 
         return $list;
     }
@@ -254,11 +259,11 @@ class ShareModel implements IShareModel
     public function commentShare(array $params)
     {
 
-        $account = $params['account'];
-        $shareKey = $params['share_key'];
-        $commentInfo = $params['comment_info'];
-        $firstCommentKey = $params['first_comment_key'];
-        $secondCommentKey = $params['second_comment_key'];
+        $account            = $params['account'];
+        $shareKey           = $params['share_key'];
+        $commentInfo        = $params['comment_info'];
+        $firstCommentKey    = $params['first_comment_key'];
+        $secondCommentKey   = $params['second_comment_key'];
 
         // 判断分享是否存在
         $shareInfo = $this->getShare($shareKey);
@@ -389,6 +394,55 @@ class ShareModel implements IShareModel
 
         return ReturnInfoConf::getReturnTemp(CodeConf::OPT_SUCCESS, $list);
     }
+
+
+    /**
+     * @inheritDoc
+     */
+    public function getWorldImgList(array $params)
+    {
+        $page       = $params['page'];
+        $count      = $params['count'];
+        $tabInfo    = $params['tab_info'];
+        $keyword    = $params['keyword'];
+        $page       = empty($page)  | $page     < 0 ? 0     : $page;
+        $count      = empty($count) | $count    < 0 ? 10    : $count;
+
+
+        $sql    = DB::table( $this->_img_table )
+            -> select( [ 'img_key', 'path' ] )
+            -> where( 'is_delete', 0 );
+
+        // 标签搜索
+        if ( !empty($tabInfo) || !empty($keyword) ){
+            $searchImgKeyList = CommendModel::getTagImgKey( $tabInfo, $keyword );
+            $sql = $sql-> whereIn( 'img_key', $searchImgKeyList );
+        }
+
+
+
+//        if ( !empty( $searchImgKeyList ) ){
+//            $sql = $sql-> whereIn( 'img_key', $searchImgKeyList );
+//        }
+
+        $imgList = $sql -> forPage($page, $count)
+                        -> get();
+
+
+        $imgList    = UtilsModel::changeMysqlResultToArr( $imgList );
+
+        // 标签映射
+        $mapColumns = [
+            'img_key' => 'tag_list',
+        ];
+        $imgList    = ImageInfoMapUtils::mapTagIntoImgInfo( $imgList, $mapColumns );
+
+        // 图片路径映射
+        $imgList = ImageInfoMapUtils::mapUrlByImgKey( $imgList, [ 'img_key' => 'url' ] );
+
+        return $imgList;
+    }
+
 
 
 }

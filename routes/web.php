@@ -17,7 +17,9 @@
 
 /** --------------------------------------- 登录模块 ------------------------------------- **/
 $router->post('/login/sendRegCode',         ['uses' => 'LoginController@sendRegCode']);
+$router->post('/login/sendCPCode',          ['uses' => 'LoginController@sendCPCode']);
 $router->post('/login/reg',                 ['uses' => 'LoginController@reg']);
+$router->post('/login/changePassword',      ['uses' => 'LoginController@changePassword']);
 $router->post('/login/login',               ['uses' => 'LoginController@login']);
 
 /** --------------------------------------- 用户模块 -------------------------------------  **/
@@ -39,6 +41,8 @@ $router->post('/user/getMyApplyList',               ['middleware' => 'auth', 'us
 $router->post('/user/getOtherApplyList',            ['middleware' => 'auth', 'uses' => 'UserController@getOtherApplyList']);
 // 通过申请
 $router->post('/user/optFriendApply',               ['middleware' => 'auth', 'uses' => 'UserController@optFriendApply']);
+// 获取好友列表
+$router->get('/user/getFriendList',               ['middleware' => 'auth', 'uses' => 'UserController@getFriendList']);
 
 /** ----------------------------------- 文件上传 -----------------------------------------------**/
 // 上传照片
@@ -57,6 +61,7 @@ $router->post('/share/deleteShare',                   ['middleware' => 'auth', '
 $router->post('/share/upShare',                       ['middleware' => 'auth', 'uses' => 'ShareController@upShare']);
 $router->post('/share/commentShare',                  ['middleware' => 'auth', 'uses' => 'ShareController@commentShare']);
 $router->get('/share/getCommentList',                 ['middleware' => 'auth', 'uses' => 'ShareController@getCommentList']);
+$router->get('/share/getWorldImgList',                ['uses' => 'ShareController@getWorldImgList']);
 
 
 
