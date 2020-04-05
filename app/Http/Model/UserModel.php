@@ -143,6 +143,9 @@ class UserModel implements IUserModel
         ];
         $userInfo = UtilsModel::clearSensitiveInfo([$userInfo], $sensitiveColumns)[0];
 
+        $userInfo['icon'] = str_replace( PublicPath::getPath( 'resource_head' ), PublicPath::getPath( 'server_root' ) . 'head/', $userInfo['icon']);;
+
+
         return $userInfo;
     }
 

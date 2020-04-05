@@ -93,7 +93,6 @@ class UserInfoMapUtils
             }
 
         }
-        \Log::info($accounts);
         $userInfoList = self::getUserInfoBatch( $accounts );
 
         foreach ($list as &$item) {
