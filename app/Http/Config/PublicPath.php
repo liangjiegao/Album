@@ -22,7 +22,7 @@ class PublicPath
             'TEST_resource_img'    => 'C:\Users\Administrator\Desktop\test\img\\',
 
             // 服务器地址
-            'server_root'           => '',
+            'server_root'           => 'http://120.27.210.67/resource/',
             'TEST_server_root'      => 'C:\Users\Administrator\Desktop\test\\',
 
         ];
