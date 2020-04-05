@@ -63,7 +63,7 @@ class LoginController
     }
 
     public function login(Request $request) {
-
+        Log::info("登录");
         $params['email']        = "email";
         $params['password']     = "password";
 
