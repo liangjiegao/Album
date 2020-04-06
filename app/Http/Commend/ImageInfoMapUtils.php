@@ -99,10 +99,10 @@ class ImageInfoMapUtils
         $imgTagGroup = [];
         foreach ($imgTagList as $imgTag) {
 
-            $imgTagGroup[ $imgTag[ 'img_key' ] ][] = $imgTag[ 'tag_info' ];
+            $imgTagGroup[ $imgTag[ 'img_key' ] ][ $imgTag['tag_key'] ] = $imgTag[ 'tag_info' ];
 
         }
-        \Log::info($imgTagGroup);
+
 
         // 标签映射到图片列表中
         foreach ($list as &$item) {
@@ -126,7 +126,7 @@ class ImageInfoMapUtils
     private static function getImgTagBatch( array $imgKeys ){
         $imgTags = DB::table( self::IMG_TAG_TABLE )
                     -> leftJoin( self::TAG_TABLE , self::IMG_TAG_TABLE . '.tag_key', '=', self::TAG_TABLE . '.tag_key')
-                    -> select( [ 'name as tag_info', 'img_key' ] )
+                    -> select( [ 'name as tag_info', 'img_key', self::TAG_TABLE . '.tag_key' ] )
                     -> whereIn( 'img_key', $imgKeys )
                     -> where( 'img_tag.is_delete', 0 )
                     -> where( 'tag.is_delete', 0 )
@@ -135,5 +135,6 @@ class ImageInfoMapUtils
         return $imgTags;
 
     }
+
 
 }

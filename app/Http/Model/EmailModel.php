@@ -37,7 +37,7 @@ class EmailModel implements IEmailModel
         $emailBean ->setContent($regContent);
 
         $code = $this->doSend($emailBean);
-        Log::info($code);
+
         return ReturnInfoConf::getReturnTemp($code);
     }
 

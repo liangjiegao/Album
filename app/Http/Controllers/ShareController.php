@@ -27,6 +27,7 @@ class ShareController
         $params['img_key']          = 'img_key'     ;
         $params['info']             = 'info'        ;
         $params['share_group']      = 'share_group' ;
+        $params['share_type']       = 'share_type' ;
 
         $requestParams  = ControllerUtil::paramsFilter($request, $params);
 
@@ -45,7 +46,7 @@ class ShareController
         $requestParams  = ControllerUtil::paramsFilter($request, $params);
 
         $list     = $this->_shareModel -> getShareList($requestParams);
-        Log::info($list);
+
         return UtilsModel::getCallbackJson(CodeConf::OPT_SUCCESS, [ 'data' => [ 'list' => $list ] ] );
 
     }

@@ -29,11 +29,11 @@ class ShareModel implements IShareModel
      */
     public function createShare(array $params)
     {
-        $imgKey = $params['img_key'];
-        $info = $params['info'];
-        $group = $params['share_group'];
-        $account = $params['account'];
-        $shareType = $params['share_type'];
+        $imgKey     = $params['img_key'];
+        $info       = $params['info'];
+        $group      = $params['share_group'];
+        $account    = $params['account'];
+        $shareType  = $params['share_type'];
 
         // 文案长度限制在1000字
         if (strlen($info) > 1000) {
@@ -41,6 +41,15 @@ class ShareModel implements IShareModel
             return CodeConf::DATA_TOO_LONG;
 
         }
+
+        // 修改图片可见性
+       $code = $this -> changeImgShareLevel( $imgKey, $shareType + 1 );
+        if ( $code != CodeConf::OPT_SUCCESS ){
+
+            return $code;
+
+        }
+
 
         $shareKey = $this->buildShareKey($account);
 
@@ -59,6 +68,25 @@ class ShareModel implements IShareModel
         $insertCode = $insertObj->insertObject($this->_share_info_table);
 
         return $insertCode;
+    }
+
+    public function changeImgShareLevel( string $imgKey, string $shareLevel ){
+
+        $update = [
+            'share_level' => $shareLevel
+        ];
+
+        $re = DB::table( $this->_img_table )
+                -> where( 'img_key', '=', $imgKey )
+                -> update( $update );
+
+        if ( $re === false ){
+
+            return CodeConf::DB_OPT_FAIL;
+
+        }
+
+        return CodeConf::OPT_SUCCESS;
     }
 
     private function buildShareKey($account)
@@ -175,15 +203,16 @@ class ShareModel implements IShareModel
         $select = "share_key, account, img_key, info, create_time, up_account, share_type";
         $sqlGetShare = "select * from {$shareTable} 
                                     where 
-                                          (share_group like :user or share_type = 1 or share_type = 2 ) 
-                                        and (account in ($sqlGetFriend) or account = :account)
+                                          
+                                          ( ((share_type = 1 or share_type = 2) and (account in ($sqlGetFriend) or account = :self0) ) or ( share_type = 0 and account = :self1 ) ) 
+                                        
                                         and is_delete = 0
                                     order by create_time desc
                                     limit {$optBean->getPage()}, {$optBean->getCount()}";
-
-        $selectParams['user'] = $account;
-        $selectParams['account_self'] = $account;
-        $selectParams['account'] = $account;
+        \Log::info($sqlGetShare);
+        $selectParams['self0']          = $account;
+        $selectParams['account_self']   = $account;
+        $selectParams['self1']      = $account;
 
         $list = DB::select($sqlGetShare, $selectParams);
 
@@ -410,8 +439,8 @@ class ShareModel implements IShareModel
 
 
         $sql    = DB::table( $this->_img_table )
-            -> select( [ 'img_key', 'path' ] )
-            -> where( 'is_delete', 0 );
+                    -> select( [ 'img_key', 'path' ] )
+                    -> where( 'is_delete', 0 );
 
         // 标签搜索
         if ( !empty($tabInfo) || !empty($keyword) ){
@@ -419,11 +448,6 @@ class ShareModel implements IShareModel
             $sql = $sql-> whereIn( 'img_key', $searchImgKeyList );
         }
 
-
-
-//        if ( !empty( $searchImgKeyList ) ){
-//            $sql = $sql-> whereIn( 'img_key', $searchImgKeyList );
-//        }
 
         $imgList = $sql -> forPage($page, $count)
                         -> get();

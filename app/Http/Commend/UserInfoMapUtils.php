@@ -29,7 +29,7 @@ class UserInfoMapUtils
 
             }
         }
-        \Log::info($fromAccount);
+
         // 获取用户数据
         $userInfoList = self::getUserInfoBatch( $fromAccount );
 

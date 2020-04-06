@@ -36,9 +36,9 @@ $router->post('/user/sendChangePasswordCheckCode',  ['middleware' => 'auth', 'us
 // 添加好友申请
 $router->post('/user/applyFriend',                  ['middleware' => 'auth', 'uses' => 'UserController@applyFriend']);
 // 获取自己申请添加好友的列表
-$router->post('/user/getMyApplyList',               ['middleware' => 'auth', 'uses' => 'UserController@getMyApplyList']);
+$router->get('/user/getMyApplyList',               ['middleware' => 'auth', 'uses' => 'UserController@getMyApplyList']);
 // 获取别人申请添加自己为好友的列表
-$router->post('/user/getOtherApplyList',            ['middleware' => 'auth', 'uses' => 'UserController@getOtherApplyList']);
+$router->get('/user/getOtherApplyList',            ['middleware' => 'auth', 'uses' => 'UserController@getOtherApplyList']);
 // 通过申请
 $router->post('/user/optFriendApply',               ['middleware' => 'auth', 'uses' => 'UserController@optFriendApply']);
 // 获取好友列表
@@ -63,6 +63,10 @@ $router->post('/share/commentShare',                  ['middleware' => 'auth', '
 $router->get('/share/getCommentList',                 ['middleware' => 'auth', 'uses' => 'ShareController@getCommentList']);
 $router->get('/share/getWorldImgList',                ['uses' => 'ShareController@getWorldImgList']);
 
+/** -------------------------------------- 标签 ----------------------------------------------**/
+$router->post('/tag/addTag',                          ['middleware' => 'auth', 'uses' => 'TagController@addTag']);
+$router->post('/tag/deleteTag',                       ['middleware' => 'auth', 'uses' => 'TagController@deleteTag']);
+
 
 
 // 关系绑定， 依赖接口而不是依赖对象
@@ -72,6 +76,7 @@ App::bind(App\Http\Model\Impl\IUserModel::class ,       App\Http\Model\UserModel
 App::bind(App\Http\Model\Impl\IUploadModel::class ,     App\Http\Model\UploadModel::class);
 App::bind(App\Http\Model\Impl\IWorkspaceModel::class ,  App\Http\Model\WorkspaceModel::class);
 App::bind(App\Http\Model\Impl\IShareModel::class ,      App\Http\Model\ShareModel::class);
+App::bind(App\Http\Model\Impl\ITagModel::class ,      App\Http\Model\TagModel::class);
 
 App::bind("UserBean" ,                                  App\Http\Bean\UserBean::class);
 App::bind("EmailBean" ,                                 App\Http\Bean\EmailBean::class);
@@ -81,4 +86,6 @@ App::bind("UserRelationBean" ,                          App\Http\Bean\UserRelati
 App::bind("ShareInfoBean" ,                             App\Http\Bean\ShareInfoBean::class);
 App::bind("DBOptBean" ,                                 App\Http\Bean\DBOptBean::class);
 App::bind("CommentBean" ,                               App\Http\Bean\CommentBean::class);
+App::bind("TagBean" ,                                   App\Http\Bean\TagBean::class);
+App::bind("ImgTagBean" ,                                App\Http\Bean\ImgTagBean::class);
 

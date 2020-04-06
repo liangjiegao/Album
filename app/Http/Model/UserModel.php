@@ -79,7 +79,7 @@ class UserModel implements IUserModel
 //        if ( !CommendModel::verificationCheckCode($optEmail, $checkCode, EmailContentConf::CH_PASSWORD) ) { // 验证码无效
 //            return CodeConf::CHECK_CODE_INVALID;
 //        }
-        \Log::info($newPassword);
+
         // 验证新密码长度
         if ( strlen($newPassword) < 6) {
             return CodeConf::PASSWORD_LEN_TOO_SHORT;
@@ -141,9 +141,11 @@ class UserModel implements IUserModel
         $sensitiveColumns = [
             'id', 'last_login_ip', 'last_login_time'
         ];
-        $userInfo = UtilsModel::clearSensitiveInfo([$userInfo], $sensitiveColumns)[0];
+        if ( !empty($userInfo) ){
+            $userInfo = UtilsModel::clearSensitiveInfo([$userInfo], $sensitiveColumns)[0];
+            $userInfo['icon'] = str_replace( PublicPath::getPath( 'resource_head' ), PublicPath::getPath( 'server_root' ) . 'head/', $userInfo['icon']);;
+        }
 
-        $userInfo['icon'] = str_replace( PublicPath::getPath( 'resource_head' ), PublicPath::getPath( 'server_root' ) . 'head/', $userInfo['icon']);;
 
 
         return $userInfo;
@@ -353,6 +355,14 @@ class UserModel implements IUserModel
         // 判断是否已经接受或拒绝过该好友申请
         if ( !empty( $relationSelf ) ) {
 
+            $code = $this->setDelete( $relationKey );
+
+            if ( $code != CodeConf::OPT_SUCCESS ){
+
+                return $code;
+
+            }
+
             $passResult = $relationSelf->getIsPass();
 
             if ( $passResult == 0 ){
@@ -415,10 +425,13 @@ class UserModel implements IUserModel
         $account = $params['account'];
 
         // 获取申请列表
-        $applyList = DB::table( $this->_user_relation_table )
-                    -> leftJoin( $this -> _user_table , $this->_user_relation_table . '.account_self', '=', $this->_user_table . '.account')
-                    -> select( ['relation_key', 'nickname', 'account'] )
-                    -> where( 'account_friend', '=', $account )
+        $applyList = DB::table( $this->_user_relation_table . ' as ur_self' )
+                    -> leftJoin( $this -> _user_table , 'ur_self.account_self', '=', $this->_user_table . '.account')
+                    -> leftJoin( $this -> _user_relation_table . ' as ur_friend'  , 'ur_self.account_friend', '=', 'ur_friend.account_self')
+                    -> select( ['ur_self.relation_key', 'nickname', 'account'] )
+                    -> where( 'ur_self.account_friend', '=', $account )
+                    -> whereNull( 'ur_friend.id' )
+                    -> where( 'ur_self.is_delete', '=', 0 )
                     -> get();
         $applyList = UtilsModel::changeMysqlResultToArr($applyList);
 
@@ -434,15 +447,49 @@ class UserModel implements IUserModel
 
         // 获取申请列表
         $applyList = DB::table( $this->_user_relation_table )
-            -> leftJoin( $this -> _user_table , $this->_user_relation_table . '.account_self', '=', $this->_user_table . '.account')
-            -> select( ['relation_key', 'nickname', 'account'] )
+            -> leftJoin( $this -> _user_table , $this->_user_relation_table . '.account_friend', '=', $this->_user_table . '.account')
+            -> select( ['relation_key', 'nickname', 'account', 'account_friend'] )
             -> where( 'account_self', '=', $account )
+            -> where( $this->_user_relation_table . '.is_delete', '=', 0 )
             -> get();
         $applyList = UtilsModel::changeMysqlResultToArr($applyList);
+
+        $accountFriends = array_column( $applyList, 'account_friend' );
+        $relationStatus = $this->getRelationStatus( $accountFriends );
+
+        foreach ($applyList as &$item) {
+
+            $accountFriend = $item['account_friend'];
+
+            if ( isset( $relationStatus[$accountFriend] ) ){
+                // 已处理
+                $item['is_pass'] = $relationStatus[$accountFriend] == 1 ? '已通过' : "未通过";
+            }else{
+                //未处理
+                $item['is_pass'] = "未处理";
+            }
+
+        }
 
         return $applyList;
     }
 
+    private function getRelationStatus( array $accountFriends ){
+
+        $list = DB::table( $this->_user_relation_table )
+                -> select( [ 'account_self', 'is_pass' ] )
+                -> whereIn( 'account_self', $accountFriends )
+                -> get();
+        $list = UtilsModel::changeMysqlResultToArr( $list );
+
+        $relationStatus = [];
+        foreach ($list as $item) {
+
+            $relationStatus[ $item[ 'account_self' ] ] = $item['is_pass'];
+
+        }
+        return $relationStatus;
+    }
 
     /**
      * @inheritDoc
@@ -469,5 +516,18 @@ class UserModel implements IUserModel
         $list   = CommendModel::pathFormatToUrl( $list, $formatColumns ) ;
 
         return $list;
+    }
+
+    private function setDelete( string $relationKey ){
+
+        $re = DB::table( $this->_user_relation_table )
+                -> where( 'relation_key' , $relationKey )
+                -> update( ['is_delete' => 1 ] );
+        if ( $re === false ){
+
+            return CodeConf::DB_OPT_FAIL;
+
+        }
+        return CodeConf::OPT_SUCCESS;
     }
 }

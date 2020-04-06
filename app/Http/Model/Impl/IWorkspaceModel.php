@@ -15,5 +15,4 @@ interface IWorkspaceModel
     public function getWorkspace( array $params);
 
 
-
 }

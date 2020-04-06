@@ -108,7 +108,7 @@ class CommendModel
 
 
         $code = rand(100000, 999999);
-        Log::info($redisHead);
+
         // 有效期5分钟
         Redis::setex( $redisHead . md5($email), self::CHECK_CODE_LIVE, $code);
         return  $code;

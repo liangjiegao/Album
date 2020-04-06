@@ -34,6 +34,9 @@ class RedisHeadConf
             //分享
             'share_info_sort'           => 'share_info_sort_',
 
+            // 标签key
+            'tag_key_sort'           => 'tag_key_sort_',
+
 
         ];
 

@@ -159,7 +159,7 @@ class LoginModel implements ILoginModel
         $email      =   $params['email'];
         $checkCode  =   $params['check_code'];
         $password   =   $params['password'];
-        Log::info($password);
+
         if ( CommendModel::verificationCheckCode($email, $checkCode, EmailContentConf::CH_PASSWORD) ) { //验证码有效
 
             $userModel = \App::make( IUserModel::class );
@@ -178,7 +178,7 @@ class LoginModel implements ILoginModel
             }
 
             $newPassword    = UtilsModel::getSqlPassword($password);
-            Log::info($newPassword);
+
             $re = DB::table($this->_user_table)
                     -> where('email', '=', $email )
                     -> update(['password' => $newPassword]);
