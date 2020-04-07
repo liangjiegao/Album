@@ -22,12 +22,13 @@ class EmailModel implements IEmailModel
         $emailContentConf = new EmailContentConf();
 
 
-        $tagEmail   = $requestParams['tag_email'];
-        $code       = $requestParams['code'];
-        $type       = $requestParams['type'];
+        $tagEmail       = $requestParams['tag_email'];
+        $code           = $requestParams['code'];
+        $type           = $requestParams['type'];
+        $setContent     = $requestParams['set_content'];
 
         $regTitle   = $emailContentConf -> getTitle($type);
-        $regContent = $emailContentConf -> getContent($code, $type);
+        $regContent = $emailContentConf -> getContent($code, $type, $setContent);
 
 
         $emailBean = \App::make("EmailBean");

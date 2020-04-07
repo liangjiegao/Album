@@ -6,6 +6,7 @@ namespace App\Http\Model;
 
 use App\Http\Config\CodeConf;
 use App\Http\Config\RedisHeadConf;
+use App\Http\Config\ReturnInfoConf;
 use App\Http\Model\Impl\ITagModel;
 use Illuminate\Support\Facades\DB;
 
@@ -23,6 +24,8 @@ class TagModel implements ITagModel
 
         $imgKey     = $params['img_key'];
         $tagName    = $params['tag_name'];
+        $score      = $params['score'];
+        $score      = empty( $score ) ? 0.5 : $score;
 
         $tag = $this->getTagByName( $tagName );
 
@@ -56,22 +59,23 @@ class TagModel implements ITagModel
 
 
         // 创建tag 和 img 的映射关系
-        $ingTagBean    = \App::make( 'ImgTagBean' );
+        $imgTagBean    = \App::make( 'ImgTagBean' );
 
-        $ingTagBean -> setTagKey( $tagKey );
-        $ingTagBean -> setImgKey( $imgKey );
-        $ingTagBean -> setCreateTime( time() );
+        $imgTagBean -> setTagKey( $tagKey );
+        $imgTagBean -> setImgKey( $imgKey );
+        $imgTagBean -> setScore( $score );
+        $imgTagBean -> setCreateTime( time() );
 
-        $insertObj      = new InsertUpdateObjectUtils( $ingTagBean );
+        $insertObj      = new InsertUpdateObjectUtils( $imgTagBean );
         $insertTagCode  = $insertObj->insertObject( $this->_img_tag );
 
         if ( $insertTagCode != CodeConf::OPT_SUCCESS ){
 
-            return $insertTagCode;
+            return ReturnInfoConf::getReturnTemp($insertTagCode, []);
 
         }
 
-        return CodeConf::OPT_SUCCESS;
+        return ReturnInfoConf::getReturnTemp(CodeConf::OPT_SUCCESS, ['tag_key' => $tagKey] );
     }
 
     private function getTagByName( string $tagName ){

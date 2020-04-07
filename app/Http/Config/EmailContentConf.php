@@ -7,17 +7,20 @@ namespace App\Http\Config;
 class EmailContentConf
 {
 
-    const REG         = 'reg';
-    const CH_PASSWORD = 'ch_passwd';
+    const REG           = 'reg';
+    const CH_PASSWORD   = 'ch_passwd';
+    const ERROR         = 'error';
 
     private $_title             = [
         'reg'       => '注册验证码',
-        'ch_passwd' => '修改密码验证码'
+        'ch_passwd' => '修改密码验证码',
+        'error'     => '系统错误'
     ];
 
     private $_content       = [
         'reg'       => '您好，您的注册验证码是：%s，有效期为5分钟。</br>如果不是本人操作请忽略此邮件。',
         'ch_passwd' => '您好，您的验证码是：%s，有效期为5分钟。</br>如果不是本人操作请忽略此邮件。',
+        'error'     => '',
     ];
 
     private static $_servers = [
@@ -47,9 +50,10 @@ class EmailContentConf
     /**
      * @param string $code
      * @param string $type
+     * @param string $setContent
      * @return string
      */
-    public function getContent(string $code, string $type): string
+    public function getContent(string $code, string $type, string $setContent = '' ): string
     {
         switch ($type){
             case self::REG :
@@ -57,7 +61,7 @@ class EmailContentConf
             case self::CH_PASSWORD :
                 return sprintf( $this->_content[self::CH_PASSWORD], $code );
             default : {
-                return sprintf( $this->_content[self::REG], $code );
+                return $setContent;
             }
         }
     }

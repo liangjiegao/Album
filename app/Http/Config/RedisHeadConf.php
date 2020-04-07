@@ -38,6 +38,10 @@ class RedisHeadConf
             'tag_key_sort'           => 'tag_key_sort_',
 
 
+            // 图片解析
+            'img_build_tag_access_token'           => 'img_build_tag_access_token',
+
+
         ];
 
         return isset($list[$key]) ? $list[$key] : "";

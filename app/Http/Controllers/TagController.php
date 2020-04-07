@@ -22,9 +22,12 @@ class TagController
 
         $params['img_key']  = "img_key";
         $params['tag_name'] = "tag_name";
+        $params['score']    = "score";
 
         $requestParams  = ControllerUtil::paramsFilter($request, $params);
-        $code           = $this->_tagModel -> addTag($requestParams);
+        $returnInfo     = $this->_tagModel -> addTag($requestParams);
+
+        $code = $returnInfo['code'];
 
         return UtilsModel::getCallbackJson($code);
 

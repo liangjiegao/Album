@@ -440,7 +440,8 @@ class ShareModel implements IShareModel
 
         $sql    = DB::table( $this->_img_table )
                     -> select( [ 'img_key', 'path' ] )
-                    -> where( 'is_delete', 0 );
+                    -> where( 'is_delete', 0 )
+                    -> where( 'share_level', 3 );
 
         // 标签搜索
         if ( !empty($tabInfo) || !empty($keyword) ){
@@ -450,8 +451,9 @@ class ShareModel implements IShareModel
 
 
         $imgList = $sql -> forPage($page, $count)
+//            -> toSql();
                         -> get();
-
+//        \Log::info($imgList);
 
         $imgList    = UtilsModel::changeMysqlResultToArr( $imgList );
 

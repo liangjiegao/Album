@@ -48,6 +48,7 @@ class UploadModel implements IUploadModel
         }
         $path       = '';
         $fileName   = '';
+        $imgKeys    = [];
         $savePaths  = [];
         $saveObj    = [];
         foreach ($files as $index => $file) {
@@ -93,8 +94,10 @@ class UploadModel implements IUploadModel
             $imageBean->setImgName( $originFileName );
 
             $saveObj[] = $imageBean;
-
+            $imgKeys[] = $imgKey;
         }
+
+        DB::beginTransaction();
 
         // 全部文件保存到文件系统成功后，插入数据库
         $insertObjUtils = new InsertUpdateObjectUtils( $saveObj );
@@ -107,14 +110,26 @@ class UploadModel implements IUploadModel
 
             // 如果删除失败，则返回系统异常
             if ( $delCode != CodeConf::OPT_SUCCESS ) {
-
+                DB::rollBack();
                 return ReturnInfoConf::getReturnTemp(CodeConf::SYSTEM_EXCEPTION);
 
             }
-
+            DB::rollBack();
             return ReturnInfoConf::getReturnTemp(CodeConf::DB_OPT_FAIL);
         }
 
+        // 图片标签解析
+        $model  = new ImgBuildTagModel( $imgKeys );
+        $code   = $model -> parseImg();
+
+        if ( $code != CodeConf::OPT_SUCCESS ){
+
+            DB::rollBack();
+            return ReturnInfoConf::getReturnTemp( $code );
+
+        }
+
+        DB::commit();
         //操作成功
         return ReturnInfoConf::getReturnTemp(CodeConf::OPT_SUCCESS, ['url' => $path . '/' . $fileName]);
     }

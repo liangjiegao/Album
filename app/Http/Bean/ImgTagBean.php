@@ -9,8 +9,9 @@ class ImgTagBean
     private $id             ;
     private $tag_key        ;
     private $img_key        ;
-    private $create_time     ;
+    private $create_time    ;
     private $is_delete = 0  ;
+    private $score     = 0  ;
 
     /**
      * @return mixed
@@ -90,6 +91,22 @@ class ImgTagBean
     public function setIsDelete(int $is_delete): void
     {
         $this->is_delete = $is_delete;
+    }
+
+    /**
+     * @return int
+     */
+    public function getScore(): int
+    {
+        return $this->score;
+    }
+
+    /**
+     * @param int $score
+     */
+    public function setScore(int $score): void
+    {
+        $this->score = $score;
     }
 
 
