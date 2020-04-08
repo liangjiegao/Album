@@ -4,6 +4,7 @@
 namespace App\Http\Commend;
 
 
+use App\Http\Config\PublicPath;
 use App\Http\Model\UtilsModel;
 use Illuminate\Support\Facades\DB;
 
@@ -35,7 +36,10 @@ class ImageInfoMapUtils
         // 提取 img_key - path 映射表
         $keyPathMap = [];
         foreach ($imgInfoList as $imgInfo) {
-            $keyPathMap[ $imgInfo['img_key'] ] = $imgInfo['path'];
+//            str_replace( PublicPath::getPath( 'resource_head' ), PublicPath::getPath( 'server_root' ) . 'head/', $imgInfo['path']);;
+
+
+            $keyPathMap[ $imgInfo['img_key'] ] = str_replace( PublicPath::getPath( 'resource_head' ), PublicPath::getPath( 'server_root' ) . 'head/', $imgInfo['path']);
         }
 
         // 将名称映射到账号上
