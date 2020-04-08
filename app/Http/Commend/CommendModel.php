@@ -122,7 +122,7 @@ class CommendModel
 
                 if ( isset( $item[$from] ) ){
 
-                    $item[$to] = str_replace( PublicPath::getPath( 'resource_head' ), PublicPath::getPath( 'server_root' ) . 'head/', $item[$from]);;
+                    $item[$to] = str_replace( PublicPath::getPath( 'resource_img' ), PublicPath::getPath( 'server_root' ) . 'img/', $item[$from]);;
 
                 }
 
