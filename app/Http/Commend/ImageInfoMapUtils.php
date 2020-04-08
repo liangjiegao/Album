@@ -37,9 +37,9 @@ class ImageInfoMapUtils
         $keyPathMap = [];
         foreach ($imgInfoList as $imgInfo) {
 //            str_replace( PublicPath::getPath( 'resource_head' ), PublicPath::getPath( 'server_root' ) . 'head/', $imgInfo['path']);;
+            \Log::info($imgInfo['path']);
 
-
-            $keyPathMap[ $imgInfo['img_key'] ] = str_replace( PublicPath::getPath( 'resource_head' ), PublicPath::getPath( 'server_root' ) . 'head/', $imgInfo['path']);
+            $keyPathMap[ $imgInfo['img_key'] ] = str_replace( PublicPath::getPath( 'resource_img' ), PublicPath::getPath( 'server_root' ) . 'head/', $imgInfo['path']);
         }
 
         // 将名称映射到账号上
