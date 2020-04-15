@@ -22,6 +22,7 @@ class ShareModel implements IShareModel
     private $_relation_table    = 'user_relation';
     private $_comment_table     = 'comment';
     private $_img_table         = 'img_info';
+    private $_img_tag_table     = 'img_tag';
 
 
     /**
@@ -192,40 +193,39 @@ class ShareModel implements IShareModel
 
     public function getFriendShare(string $account, DBOptBean $optBean)
     {
-
-        $relationTable = $this->_relation_table;
-        $shareTable = $this->_share_info_table;
-
-        $sqlGetMyApplyFriend = "select account_friend from {$relationTable} where account_self = :account_self and is_pass = 1 and is_delete = 0";
-
-        $sqlGetFriend = "select account_self from {$relationTable} where account_self in ($sqlGetMyApplyFriend) and is_pass = 1 and is_delete = 0";
-
+        // 好友关系表
+        $relationTable  = $this->_relation_table;
+        // 分享记录表
+        $shareTable     = $this->_share_info_table;
+        // 获取好友子查询
+        $sqlGetMyApplyFriend = "select account_friend from {$relationTable} where account_self = :account_self 
+                                   and is_pass = 1 and is_delete = 0";
+        $sqlGetFriend = "select account_self from {$relationTable} where account_self in ($sqlGetMyApplyFriend) 
+                                 and is_pass = 1 and is_delete = 0";
+        // 获取分享记录主查询
         $select = "share_key, account, img_key, info, create_time, up_account, share_type";
         $sqlGetShare = "select * from {$shareTable} 
-                                    where 
-                                          
-                                          ( ((share_type = 1 or share_type = 2) and (account in ($sqlGetFriend) or account = :self0) ) or ( share_type = 0 and account = :self1 ) ) 
-                                        
-                                        and is_delete = 0
-                                    order by create_time desc
-                                    limit {$optBean->getPage()}, {$optBean->getCount()}";
-        \Log::info($sqlGetShare);
+                        where( ((share_type = 1 or share_type = 2) and (account in ($sqlGetFriend) or account = :self0) ) 
+                                or ( share_type = 0 and account = :self1 ) ) and is_delete = 0
+                                    order by create_time desc limit {$optBean->getPage()}, {$optBean->getCount()}";
+        // 查询参数
         $selectParams['self0']          = $account;
         $selectParams['account_self']   = $account;
         $selectParams['self1']      = $account;
-
+        // 执行查询
         $list = DB::select($sqlGetShare, $selectParams);
-
+        // 数据格式化
         $list = UtilsModel::changeMysqlResultToArr($list);
 
-
+        // 图片路径映射
+        $list = ImageInfoMapUtils::mapUrlByImgKey( $list, [ 'img_key' => 'url' ] );
 
         return $list;
     }
 
     private function getWorldShare(DBOptBean $optBean)
     {
-
+        // 系统共享查询
         $list = DB::table($this->_share_info_table)
             ->select(["share_key", "account", "img_key", "info", "create_time", "up_account", "share_type"])
             ->where('share_type', '=', 2)
@@ -233,6 +233,7 @@ class ShareModel implements IShareModel
             ->orderBy('create_time', 'desc')
             ->forPage($optBean->getPage(), $optBean->getCount())
             ->get();
+        // 数据格式化
         $list = UtilsModel::changeMysqlResultToArr($list);
 
         return $list;
@@ -243,15 +244,19 @@ class ShareModel implements IShareModel
      */
     public function upShare(array $params)
     {
-        $account = $params['account'];
-        $shareKey = $params['share_key'];
+        $account = $params['account'];      // 账号
+        $shareKey = $params['share_key'];   // 分享key
 
+        // 获取分享信息
         $shareBean = $this->getShare($shareKey);
+        // 判断分享是否存在
         if (empty($shareBean)) {
-
+            // 分享不存在
             return CodeConf::SHARE_NON_EXISTENT;
 
         }
+
+        // 判断账号是否存存在
         $upAccount = $shareBean->getUpAccount();
         if (empty($upAccount)) {
 
@@ -266,17 +271,16 @@ class ShareModel implements IShareModel
         // 判断是否已经点赞
         foreach ($upAccount as $getAccount) {
             if ($account == $getAccount) {
-
+                // 已经点过赞了
                 return CodeConf::ALREADY_UP;
 
             }
         }
-
+        // 未点赞，将点赞账号记录在该分享信息中
         $upAccount[] = $account;
         $shareBean->setUpAccount(json_encode($upAccount));
-
+        // 插入点赞信息
         $insertObj = new InsertUpdateObjectUtils($shareBean);
-
         $updateCode = $insertObj->updateObject($this->_share_info_table, 'id', $shareBean->getId());
 
         return $updateCode;
@@ -288,9 +292,9 @@ class ShareModel implements IShareModel
     public function commentShare(array $params)
     {
 
-        $account            = $params['account'];
-        $shareKey           = $params['share_key'];
-        $commentInfo        = $params['comment_info'];
+        $account            = $params['account'];           // 账号
+        $shareKey           = $params['share_key'];         // 分享key
+        $commentInfo        = $params['comment_info'];      // 评论内容
         $firstCommentKey    = $params['first_comment_key'];
         $secondCommentKey   = $params['second_comment_key'];
 
@@ -302,6 +306,7 @@ class ShareModel implements IShareModel
 
         }
 
+        // 获取父级评论key
         $pidFirst = 0;
         $pidSecond = 0;
         if (!empty($firstCommentKey)) {
@@ -324,7 +329,7 @@ class ShareModel implements IShareModel
 
         }
 
-
+        // 创建评论对象
         $commentKey = $this->buildCommendKey($account);
 
         $commentBean = \App::make('CommentBean');
@@ -335,7 +340,7 @@ class ShareModel implements IShareModel
         $commentBean->setAccount($account);
         $commentBean->setCreateTime(time());
         $commentBean->setShareKey($shareKey);
-
+        // 记录评论
         $insertObj = new InsertUpdateObjectUtils($commentBean);
         $insertCode = $insertObj->insertObject($this->_comment_table);
 
@@ -430,31 +435,31 @@ class ShareModel implements IShareModel
      */
     public function getWorldImgList(array $params)
     {
-        $page       = $params['page'];
-        $count      = $params['count'];
-        $tabInfo    = $params['tab_info'];
-        $keyword    = $params['keyword'];
+        $page       = $params['page'];      // 当前页
+        $count      = $params['count'];     // 一页显示数量
+        $tabInfo    = $params['tab_info'];  // 标签信息
+        $keyword    = $params['keyword'];   // 搜素关键词
         $page       = empty($page)  | $page     < 0 ? 0     : $page;
         $count      = empty($count) | $count    < 0 ? 10    : $count;
 
-
+        // 图片获取主查询
         $sql    = DB::table( $this->_img_table )
-                    -> select( [ 'img_key', 'path' ] )
-                    -> where( 'is_delete', 0 )
+                    -> leftJoin( $this->_img_tag_table , $this->_img_table . '.img_key', '=', $this->_img_tag_table . '.img_key' )
+                    -> select( [ $this->_img_table . '.img_key', 'path' ] )
+                    -> where( $this->_img_table . '.is_delete', 0 )
                     -> where( 'share_level', 3 );
 
         // 标签搜索
         if ( !empty($tabInfo) || !empty($keyword) ){
             $searchImgKeyList = CommendModel::getTagImgKey( $tabInfo, $keyword );
-            $sql = $sql-> whereIn( 'img_key', $searchImgKeyList );
+            $sql = $sql-> whereIn( $this->_img_table . '.img_key', $searchImgKeyList );
         }
 
-
+        // 对查询进行分页查询和排序
         $imgList = $sql -> forPage($page, $count)
-//            -> toSql();
+                        -> orderBy( 'score', 'desc' )
                         -> get();
-//        \Log::info($imgList);
-
+        // 格式化数据
         $imgList    = UtilsModel::changeMysqlResultToArr( $imgList );
 
         // 标签映射

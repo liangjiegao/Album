@@ -12,7 +12,8 @@
         "laravel/framework": "5.5.*",
         "laravel/tinker": "~1.0",
         "predis/predis": "1.1",
-      "ext-curl": "*"
+      "ext-curl": "*",
+      "ext-mysqli": "*"
     },
     "require-dev": {
         "filp/whoops": "~2.0",

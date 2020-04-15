@@ -23,24 +23,24 @@ class UploadModel implements IUploadModel
      */
     public function uploadImg(array $params): array
     {
-        $account    = $params['account'];
-        $dirId      = $params['dir_id'];
-
+        $account    = $params['account'];       // 用户账号
+        $dirId      = $params['dir_id'];        // 上传的文件夹
+        // 判断用户和文件夹是否存在
         if ( !$this->checkDirIsUser( $dirId, $account ) && $dirId != 0 ) {
             return ReturnInfoConf::getReturnTemp(CodeConf::DIR_NOT_EXIST);
         }
-
+        // 判断是否有上传文件
         if ( empty( $_FILES ) ){
 
             return ReturnInfoConf::getReturnTemp(CodeConf::UPLOAD_FILE_EMPTY);
 
         }
-
+        // 提取文件信息
         $files  = is_array($_FILES["file"]["tmp_name"]) ? $_FILES["file"]["tmp_name"]   : [$_FILES["file"]["tmp_name"]] ;
         $errors = is_array($_FILES["file"]["error"])    ? $_FILES["file"]["error"]      : [$_FILES["file"]["error"]]    ;
         $sizes  = is_array($_FILES["file"]["size"])     ? $_FILES["file"]["size"]       : [$_FILES["file"]["size"]]     ;
         $names  = is_array($_FILES["file"]["name"])     ? $_FILES["file"]["name"]       : [$_FILES["file"]["name"]]     ;
-
+        // 保证文件是一个数组
         if ( !is_array( $files ) ) {
 
             return ReturnInfoConf::getReturnTemp(CodeConf::PARAMS_UNAVAILABLE);
@@ -51,20 +51,20 @@ class UploadModel implements IUploadModel
         $imgKeys    = [];
         $savePaths  = [];
         $saveObj    = [];
+        // 遍历文件数组
         foreach ($files as $index => $file) {
-
+            // 原始文件名
             $originFileName = $names[$index];
-            // 创建文件名
+            // 创建随机文件名
             $fileName   = md5($originFileName . time() . rand(100000, 999999));
             $fileFormat = strstr( $originFileName, '.'); // 后缀
             $fileName   .= $fileFormat;
-
+            // 创建图片保存路径
             $path       = PublicPath::getPath( 'resource_img' ) ;
             $path       = $path . $account . DIRECTORY_SEPARATOR;
 
             // 保存图片
             $saveCode   = CommendModel::saveFile($file, $path, $fileName);
-
 
             // 如果文件保存失败，则删除同一批次保存的文件
             if ( $saveCode != CodeConf::OPT_SUCCESS ) {
@@ -82,6 +82,7 @@ class UploadModel implements IUploadModel
             }
             $savePaths[]= $path . $fileName;
 
+            //创建图片Bean
             $imageBean  = \App::make('ImageBean');
             $imgKey     = md5( time() . rand(10000, 99999) . RedisHeadConf::getHead('img_key_sort') );
 
@@ -121,7 +122,7 @@ class UploadModel implements IUploadModel
         // 图片标签解析
         $model  = new ImgBuildTagModel( $imgKeys );
         $code   = $model -> parseImg();
-
+        // 如果标签解析失败
         if ( $code != CodeConf::OPT_SUCCESS ){
 
             DB::rollBack();

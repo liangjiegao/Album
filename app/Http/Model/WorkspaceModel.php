@@ -26,21 +26,20 @@ class WorkspaceModel implements IWorkspaceModel
         $account    = $params['account'];
         $keyword    = $params['keyword'];
 
-        // 获取文件夹
+        // 获取虚拟目录
         $sqlDir = DB::table( $this->_dir_table )
                     -> select(['id', 'name', 'pid'])
                     -> where( 'account', '=', $account )
                     -> where( 'is_delete', '=', 0 );
-
+        // 判断搜索关键词，模糊匹配目录名
         if ( !empty( $keyword ) ){
             $sqlDir = $sqlDir -> where( 'name', 'like', '%' . $keyword . '%' );
         }else{
             $sqlDir = $sqlDir -> where( 'pid', '=', $dirId );
         }
-
-
+        // 对目录进行排序
         $dirList = $sqlDir -> orderBy( 'create_time', 'desc' ) -> get();
-
+        // 数据格式化
         $dirList = UtilsModel::changeMysqlResultToArr($dirList);
 
 
@@ -51,16 +50,16 @@ class WorkspaceModel implements IWorkspaceModel
                     -> where( 'account', '=', $account )
                     -> where( 'is_delete', '=', 0 );
 
-        // 标签搜索
+        // 根据输入关键字进行标签搜索
         if ( !empty($keyword) ){
             $searchImgKeyList = CommendModel::getTagImgKey( '', $keyword );
             $sqlImg = $sqlImg-> whereIn( 'img_key', $searchImgKeyList );
         }else{
             $sqlImg = $sqlImg->  where( 'dir_id', '=', $dirId );
         }
-
+        // 对图片进行排序
         $imgList = $sqlImg -> orderBy( 'create_time', 'desc' ) -> get();
-
+        // 数据格式化
         $imgList = UtilsModel::changeMysqlResultToArr($imgList);
 
 

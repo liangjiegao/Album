@@ -110,35 +110,28 @@ class LoginModel implements ILoginModel
 
     public function login(array $requestParams)
     {
-
+        // 用户邮箱
         $email      = $requestParams['email'];
+        // 用户密码
         $password   = $requestParams['password'];
         $userModel  = \App::make(IUserModel::class);
-        // 验证用户
+        // 验证用户是否存在
         $userInfo = $userModel-> getUserInfo( [ 'unique_key' => 'email', 'unique_val' => $email ] );
         if ( !empty($userInfo) ){
             // 存在用户，验证密码
             if ( UtilsModel::getSqlPassword($password) == $userInfo['password'] ){
-
                 $account    = $userInfo['account'];
-
                 $token      = $this->buildToken( $account );
-
                 // 密码正确
                 return ReturnInfoConf::getReturnTemp(CodeConf::OPT_SUCCESS, ['token' => $token]);
-
             }else{
-
                 // 密码错误
                 return ReturnInfoConf::getReturnTemp(CodeConf::LOGIN_PASSWD_MISMATCH);
             }
-
         }else{
-
             // 用户不存在
             return ReturnInfoConf::getReturnTemp(CodeConf::USER_UN_EXIST);
         }
-
     }
 
 

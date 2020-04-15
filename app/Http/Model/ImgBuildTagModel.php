@@ -105,38 +105,34 @@ class ImgBuildTagModel
     }
 
     public function parseImg(){
-
+        // 要解析的图片key
         $imgKeys = $this->_img_keys;
 
+        // 获取队列中要解析的图片
         $imgInfos = $this->getImgInfo( $imgKeys );
 
+        // 遍历数据，将图片按顺序得提交到解析服务中
         foreach ($imgInfos as $item ) {
 
             $imgKey     = $item['img_key'];
             $imgPath    = $item['path'];
-
+            // 解析图片,得到标签
             $parseInfo  = $this->doParse( $imgPath );
             $parseInfo  = json_decode($parseInfo, true);
-
+            // 如果解析成功
             if ( isset(  $parseInfo['result'] ) ){
-
+                // 获取解析结果
                 $parseResult = $parseInfo['result'];
-
+                // 将解析结果关联到图片中
                 $code = $this->mapTagToImg( $imgKey, $parseResult );
 
                 if ( $code != CodeConf::OPT_SUCCESS ){
-
                     return $code;
-
                 }
             }else{
-
                 return CodeConf::IMG_PARSE_FAIL;
-
             }
-
         }
-
         return CodeConf::OPT_SUCCESS;
     }
 
