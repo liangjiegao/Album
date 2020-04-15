@@ -468,6 +468,7 @@ class ShareModel implements IShareModel
         // 格式化数据
         $imgList    = UtilsModel::changeMysqlResultToArr( $imgList );
 
+
         // 标签映射
         $mapColumns = [
             'img_key' => 'tag_list',
