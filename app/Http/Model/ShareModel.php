@@ -10,6 +10,7 @@ use App\Http\Commend\CommentInfoMap;
 use App\Http\Commend\ImageInfoMapUtils;
 use App\Http\Commend\UserInfoMapUtils;
 use App\Http\Config\CodeConf;
+use App\Http\Config\PublicPath;
 use App\Http\Config\RedisHeadConf;
 use App\Http\Config\ReturnInfoConf;
 use App\Http\Model\Impl\IShareModel;
@@ -172,6 +173,12 @@ class ShareModel implements IShareModel
         ];
         $list = UserInfoMapUtils::mapUserInfoByAccount($list, $mapParams);
 
+        foreach ($list as &$item) {
+            \Log::info("??");
+            \Log::info($item['share_user_info']['icon']);
+            $item['share_user_info']['icon'] = str_replace( PublicPath::getPath( 'resource_head' ), PublicPath::getPath( 'server_root' ) . 'head/', $item['share_user_info']['icon']);
+        }
+
         $list = UserInfoMapUtils::mapNameToAccount($list, 'up_account', 'json', 'array');
 
         // 图片url映射
@@ -217,8 +224,7 @@ class ShareModel implements IShareModel
         // 数据格式化
         $list = UtilsModel::changeMysqlResultToArr($list);
 
-        // 图片路径映射
-        $list = ImageInfoMapUtils::mapUrlByImgKey( $list, [ 'img_key' => 'url' ] );
+
 
         return $list;
     }
