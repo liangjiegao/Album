@@ -109,7 +109,7 @@ class ImageInfoMapUtils
 
         $returnList = [];
         // 标签映射到图片列表中
-        foreach ($list as $item) {
+        foreach ($list as &$item) {
 
 
             foreach ($columns as $from => $to ) {
@@ -124,7 +124,7 @@ class ImageInfoMapUtils
             $returnList['img_key'] = $item;
         }
 
-        return array_values($returnList);
+        return $list;
     }
 
     private static function getImgTagBatch( array $imgKeys ){
