@@ -484,8 +484,7 @@ class ShareModel implements IShareModel
             }
 
             // 对查询进行分页查询和排序
-            $imgList = $sql -> forPage($page, $count)
-                        -> get();
+            $imgList = $sql -> forPage($page, $count) -> get();
             // 格式化数据
             $imgList    = UtilsModel::changeMysqlResultToArr( $imgList );
         }
@@ -539,10 +538,7 @@ class ShareModel implements IShareModel
                 -> get();
             $search     = UtilsModel::changeMysqlResultToArr( $search );
             $search     = array_column( $search, 'search' );
-//            $searchImgKeyList = CommendModel::getTagImgKey( $search, $search );
         }
-//        $searchStr  = implode('', $search);
-//        \Log::info($searchStr);
 
         $searchImgKeyList = CommendModel::getTagImgKey( $search, $search );
 
