@@ -445,31 +445,46 @@ class ShareModel implements IShareModel
         $count      = $params['count'];     // 一页显示数量
         $tabInfo    = $params['tab_info'];  // 标签信息
         $keyword    = $params['keyword'];   // 搜素关键词
+        $account    = isset( $params['account'] ) ? $params['account'] : '';   // 用户账号
         $page       = empty($page)  | $page     < 0 ? 0     : $page;
         $count      = empty($count) | $count    < 0 ? 10    : $count;
 
-        // 获取符合条件的标签
-
-
-        // 图片获取主查询
-        $sql    = DB::table( $this->_img_table )
-//                    -> leftJoin( $this->_img_tag_table , $this->_img_table . '.img_key', '=', $this->_img_tag_table . '.img_key' )
-                    -> select( [ $this->_img_table . '.img_key', 'path' ] )
-                    -> where( $this->_img_table . '.is_delete', 0 )
-                    -> where( 'share_level', 3 );
-
-        // 标签搜索
-        if ( !empty($tabInfo) || !empty($keyword) ){
-            $searchImgKeyList = CommendModel::getTagImgKey( $tabInfo, $keyword );
-            $sql = $sql-> whereIn( $this->_img_table . '.img_key', $searchImgKeyList );
-        }
-
-        // 对查询进行分页查询和排序
-        $imgList = $sql -> forPage($page, $count)
-//                        -> orderBy( 'score', 'desc' )
+        // 获取用户经常搜索的图片key
+        $hobbyImgKeys = $this->getUserOptImgKeys( $account );
+        $hobbyImg    = DB::table( $this->_img_table )
+                        -> select( [ $this->_img_table . '.img_key', 'path' ] )
+                        -> where( 'is_delete','=', 0 )
+                        -> where( 'share_level', '=' , 3 )
+                        -> whereIn( 'img_key', $hobbyImgKeys )
+                        -> forPage($page, $count)
                         -> get();
-        // 格式化数据
-        $imgList    = UtilsModel::changeMysqlResultToArr( $imgList );
+        $hobbyImg    = UtilsModel::changeMysqlResultToArr( $hobbyImg );
+        \Log::info($hobbyImg);
+        $imgList    = [];
+        if ( count($hobbyImg) < $count ){
+
+            $count = $count - count($hobbyImg);
+
+            // 图片获取主查询
+            $sql    = DB::table( $this->_img_table )
+                -> select( [ $this->_img_table . '.img_key', 'path' ] )
+                -> where( 'is_delete','=', 0 )
+                -> where( 'share_level', '=' , 3 )
+                -> whereIn( 'img_key', $hobbyImgKeys, 'or' );
+
+            // 标签搜索
+            if ( !empty($tabInfo) || !empty($keyword) ){
+                $searchImgKeyList = CommendModel::getTagImgKey( $tabInfo, $keyword );
+                $sql = $sql-> whereIn( 'img_key', $searchImgKeyList );
+            }
+
+            // 对查询进行分页查询和排序
+            $imgList = $sql -> forPage($page, $count)
+                        -> get();
+            // 格式化数据
+            $imgList    = UtilsModel::changeMysqlResultToArr( $imgList );
+        }
+        $imgList = array_merge( $hobbyImg, $imgList );
 
 
         // 标签映射
@@ -490,15 +505,31 @@ class ShareModel implements IShareModel
         return $imgList;
     }
 
-    public function getSearchTagImg( $tabInfo, $keyword ){
+    public function getUserOptImgKeys( $account ){
 
-        // 标签搜索
-        if ( !empty($tabInfo) || !empty($keyword) ){
-            $searchImgKeyList = CommendModel::getTagImgKey( $tabInfo, $keyword );
+        // 如果有登录，按账号查
+        if ( !empty( $account ) ){
+
+            $userInfo   = (new UserModel()) -> getUserInfo( [ 'unique_key' => 'account', 'unique_val' => $account] );
+            $userId     = $userInfo['id'];
+            $search     = DB::table( 'user_option' ) -> select(['search']) -> where('user_id', $userId) -> get();
+            $search     = UtilsModel::changeMysqlResultToArr( $search );
+            $search     = array_column( $search, 'search' );
 
 
         }
+        // 如果没有登录，按照ip查
+        else{
+            $ip         = $this->getIp();
+            $search     = DB::table( 'user_option' ) -> select(['search']) -> where('ip', $ip) -> get();
+            $search     = UtilsModel::changeMysqlResultToArr( $search );
+            $search     = array_column( $search, 'search' );
+//            $searchImgKeyList = CommendModel::getTagImgKey( $search, $search );
+        }
+        $searchStr  = implode('', $search);
+        $searchImgKeyList = CommendModel::getTagImgKey( $searchStr, $searchStr );
 
+        return $searchImgKeyList;
     }
 
     private function recordSearch( array $params ){
