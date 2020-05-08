@@ -449,17 +449,23 @@ class ShareModel implements IShareModel
         $page       = empty($page)  | $page     < 0 ? 0     : $page;
         $count      = empty($count) | $count    < 0 ? 10    : $count;
 
-        // 获取用户经常搜索的图片key
-        $hobbyImgKeys = $this->getUserOptImgKeys( $account );
-        $hobbyImg    = DB::table( $this->_img_table )
-                        -> select( [ $this->_img_table . '.img_key', 'path' ] )
-                        -> where( 'is_delete','=', 0 )
-                        -> where( 'share_level', '=' , 3 )
-                        -> whereIn( 'img_key', $hobbyImgKeys )
-                        -> forPage($page, $count)
-                        -> get();
-        $hobbyImg    = UtilsModel::changeMysqlResultToArr( $hobbyImg );
-        \Log::info($hobbyImg);
+        $hobbyImg = [];
+        if ( empty($tabInfo) && empty($keyword) ){
+            // 获取用户经常搜索的图片key
+            $hobbyImgKeys = $this->getUserOptImgKeys( $account );
+            $hobbyImg    = DB::table( $this->_img_table )
+                -> select( [ $this->_img_table . '.img_key', 'path' ] )
+                -> where( 'is_delete','=', 0 )
+                -> where( 'share_level', '=' , 3 )
+                -> whereIn( 'img_key', $hobbyImgKeys )
+                -> forPage($page, $count)
+                -> get();
+            $hobbyImg    = UtilsModel::changeMysqlResultToArr( $hobbyImg );
+            \Log::info($hobbyImg);
+
+        }
+
+
         $imgList    = [];
         if ( count($hobbyImg) < $count ){
 
@@ -469,12 +475,11 @@ class ShareModel implements IShareModel
             $sql    = DB::table( $this->_img_table )
                 -> select( [ $this->_img_table . '.img_key', 'path' ] )
                 -> where( 'is_delete','=', 0 )
-                -> where( 'share_level', '=' , 3 )
-                -> whereIn( 'img_key', $hobbyImgKeys, 'or' );
+                -> where( 'share_level', '=' , 3 );
 
             // 标签搜索
             if ( !empty($tabInfo) || !empty($keyword) ){
-                $searchImgKeyList = CommendModel::getTagImgKey( $tabInfo, $keyword );
+                $searchImgKeyList = CommendModel::getTagImgKey( [$tabInfo], [$keyword] );
                 $sql = $sql-> whereIn( 'img_key', $searchImgKeyList );
             }
 
@@ -512,7 +517,12 @@ class ShareModel implements IShareModel
 
             $userInfo   = (new UserModel()) -> getUserInfo( [ 'unique_key' => 'account', 'unique_val' => $account] );
             $userId     = $userInfo['id'];
-            $search     = DB::table( 'user_option' ) -> select(['search']) -> where('user_id', $userId) -> get();
+            $search     = DB::table( 'user_option' )
+                -> select(['search'])
+                -> where('user_id', $userId)
+                -> orderBy('create_time', 'desc')
+                ->limit(5)
+                -> get();
             $search     = UtilsModel::changeMysqlResultToArr( $search );
             $search     = array_column( $search, 'search' );
 
@@ -521,13 +531,20 @@ class ShareModel implements IShareModel
         // 如果没有登录，按照ip查
         else{
             $ip         = $this->getIp();
-            $search     = DB::table( 'user_option' ) -> select(['search']) -> where('ip', $ip) -> get();
+            $search     = DB::table( 'user_option' )
+                -> select(['search'])
+                -> where('ip', $ip)
+                -> orderBy('create_time', 'desc')
+                ->limit(5)
+                -> get();
             $search     = UtilsModel::changeMysqlResultToArr( $search );
             $search     = array_column( $search, 'search' );
 //            $searchImgKeyList = CommendModel::getTagImgKey( $search, $search );
         }
-        $searchStr  = implode('', $search);
-        $searchImgKeyList = CommendModel::getTagImgKey( $searchStr, $searchStr );
+//        $searchStr  = implode('', $search);
+//        \Log::info($searchStr);
+
+        $searchImgKeyList = CommendModel::getTagImgKey( $search, $search );
 
         return $searchImgKeyList;
     }

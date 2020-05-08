@@ -52,7 +52,7 @@ class WorkspaceModel implements IWorkspaceModel
 
         // 根据输入关键字进行标签搜索
         if ( !empty($keyword) ){
-            $searchImgKeyList = CommendModel::getTagImgKey( '', $keyword );
+            $searchImgKeyList = CommendModel::getTagImgKey( [''], [$keyword] );
             $sqlImg = $sqlImg-> whereIn( 'img_key', $searchImgKeyList );
         }else{
             $sqlImg = $sqlImg->  where( 'dir_id', '=', $dirId );

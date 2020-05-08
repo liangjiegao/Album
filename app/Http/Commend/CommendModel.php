@@ -133,14 +133,20 @@ class CommendModel
         return $list;
     }
 
-    public static function getTagImgKey( $tabInfo, $keyword ){
+    public static function getTagImgKey( $tabInfos, $keywords ){
 
-        $imgKeys    = DB::table( self::IMG_TAG_TABLE )
-            -> leftJoin( self::TAG_TABLE, self::IMG_TAG_TABLE . '.tag_key', '=',  self::TAG_TABLE . '.tag_key')
-            -> select( ['img_key'] )
-            -> where( 'name', 'like', '%' . $tabInfo . '%' )
-            -> where( 'name', 'like', '%' . $keyword . '%' )
-            -> get();
+        $sql    = DB::table( self::IMG_TAG_TABLE )
+                -> leftJoin( self::TAG_TABLE, self::IMG_TAG_TABLE . '.tag_key', '=',  self::TAG_TABLE . '.tag_key')
+                -> select( ['img_key'] );
+        foreach ( $tabInfos as $tabInfo ){
+            $sql = $sql -> where( 'name', 'like', '%' . $tabInfo . '%', 'or' );
+
+        }
+        foreach ( $keywords as $keyword ){
+            $sql = $sql -> where( 'name', 'like', '%' . $keyword . '%', 'or' );
+
+        }
+         $imgKeys =  $sql -> get();
         $imgKeys    = UtilsModel::changeMysqlResultToArr($imgKeys);
 
         return array_column($imgKeys, 'img_key');
