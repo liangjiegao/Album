@@ -139,7 +139,7 @@ class UserModel implements IUserModel
 
         // 去除敏感字段
         $sensitiveColumns = [
-            'id', 'last_login_ip', 'last_login_time'
+            'last_login_ip', 'last_login_time'
         ];
         if ( !empty($userInfo) ){
             $userInfo = UtilsModel::clearSensitiveInfo([$userInfo], $sensitiveColumns)[0];

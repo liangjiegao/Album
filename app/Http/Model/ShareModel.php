@@ -478,9 +478,85 @@ class ShareModel implements IShareModel
         // 图片路径映射
         $imgList = ImageInfoMapUtils::mapUrlByImgKey( $imgList, [ 'img_key' => 'url' ] );
 
+        // 记录用户搜索记录
+        $code = $this->recordSearch( $params );
+        if ( $code != CodeConf::OPT_SUCCESS ){
+            return $code;
+        }
+
         return $imgList;
     }
 
+    private function recordSearch( array $params ){
 
+        $account    = isset( $params['account'] ) ? $params['account'] : '';
+        $IP         = $this->getIp();
+        $tabInfo    = $params['tab_info'];
+        $keyword    = $params['keyword'];
 
+        $userId     = 0;
+        if ( !empty( $account ) ){
+            $userInfo   = (new UserModel()) -> getUserInfo( [ 'unique_key' => 'account', 'unique_val' => $account] );
+            $userId     = $userInfo['id'];
+
+        }
+        $data = [];
+        if ( !empty( $tabInfo ) ){
+            $data[] =  [
+                'search'        => $tabInfo,
+                'ip'            => $IP,
+                'user_id'       => $userId,
+                'create_time'   => time(),
+            ];
+        }
+        if ( !empty( $keyword ) ){
+            $data = [
+                'search'        => $keyword,
+                'ip'            => $IP,
+                'user_id'       => $userId,
+                'create_time'   => time(),
+            ];
+        }
+        $re = DB::table( 'user_option' ) -> insert($data);
+
+        if ( $re === false ){
+
+            return CodeConf::DB_OPT_FAIL;
+
+        }
+        return CodeConf::OPT_SUCCESS;
+    }
+
+    private function getIp()
+    {
+        static $ip = '';
+
+        $ip = $_SERVER['REMOTE_ADDR'];
+
+        if(isset($_SERVER['HTTP_CDN_SRC_IP'])) {
+
+            $ip = $_SERVER['HTTP_CDN_SRC_IP'];
+
+        } elseif (isset($_SERVER['HTTP_CLIENT_IP']) && preg_match('/^([0-9]{1,3}\.){3}[0-9]{1,3}$/', $_SERVER['HTTP_CLIENT_IP'])) {
+
+            $ip = $_SERVER['HTTP_CLIENT_IP'];
+
+        } elseif(isset($_SERVER['HTTP_X_FORWARDED_FOR']) AND preg_match_all('#\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}#s', $_SERVER['HTTP_X_FORWARDED_FOR'], $matches)) {
+
+            foreach ($matches[0] AS $xip) {
+
+                if (!preg_match('#^(10|172\.16|192\.168)\.#', $xip)) {
+
+                    $ip = $xip;
+
+                    break;
+
+                }
+
+            }
+
+        }
+
+        return $ip;
+    }
 }

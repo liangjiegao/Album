@@ -14,6 +14,8 @@ class ExampleTest extends TestCase
      */
     public function testBasicTest()
     {
-        $this->assertTrue(true);
+        $arr = [ 'a' => 'a' ];
+        var_dump(isset( $arr['a'] ));
+        var_dump(isset( $arr['b'] ));
     }
 }
