@@ -135,21 +135,59 @@ class CommendModel
 
     public static function getTagImgKey( $tabInfos, $keywords ){
 
-        $sql    = DB::table( self::IMG_TAG_TABLE )
+
+        $tabLikeWhere = self::getListLikeBinding($tabInfos, 'name', 'or');
+        $tabLikeParam = self::getListLikeParams($tabInfos, 'name');
+
+        $keywordLikeWhere = self::getListLikeBinding($keywords, 'name', 'or', count($tabLikeParam));
+        $keywordLikeParam = self::getListLikeParams($keywords, 'name', count($tabLikeParam));
+
+        $where = '';
+        $params = array_merge( $tabLikeParam , $keywordLikeParam);
+        if ( !empty( $tabLikeWhere ) ){
+            $where .= $tabLikeWhere;
+        }
+        if ( !empty( $keywordLikeWhere ) ){
+            if ( !empty( $where ) )
+                $where = $where . ' and ' . $keywordLikeWhere;
+            else $where = $keywordLikeWhere;
+        }
+        $imgKeys = DB::table( self::IMG_TAG_TABLE )
                 -> leftJoin( self::TAG_TABLE, self::IMG_TAG_TABLE . '.tag_key', '=',  self::TAG_TABLE . '.tag_key')
-                -> select( ['img_key'] );
-        foreach ( $tabInfos as $tabInfo ){
-            $sql = $sql -> where( 'name', 'like', '%' . $tabInfo . '%', 'or' );
+                -> select( ['img_key'] )
+                -> whereRaw( $where, $params )
+                -> get();
 
-        }
-        foreach ( $keywords as $keyword ){
-            $sql = $sql -> where( 'name', 'like', '%' . $keyword . '%', 'or' );
-
-        }
-         $imgKeys =  $sql -> get();
         $imgKeys    = UtilsModel::changeMysqlResultToArr($imgKeys);
-
         return array_column($imgKeys, 'img_key');
     }
 
+    public static function getListLikeBinding($list, $column, $symbol, $start = 0)
+    {
+
+        $list = is_array($list) ? $list : [$list];
+        $where = '';
+
+        foreach ($list as $key => $item) {
+            $index = $start + $key;
+            $where .= "{$column} like :{$column}{$index}";
+            if ($key < sizeof($list) - 1) {
+                $where .= " $symbol ";
+            }
+        }
+        if ( !empty( $where ) ){
+            $where = "({$where})";
+        }
+
+        return $where;
+    }
+
+    public static function getListLikeParams($list, $column, $start = 0){
+        $params = [];
+        foreach ($list as $key => $item) {
+            $index = $start + $key;
+            $params["{$column}{$index}"] = '%' . $item . '%';
+        }
+        return $params;
+    }
 }
