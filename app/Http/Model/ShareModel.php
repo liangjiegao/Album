@@ -448,9 +448,12 @@ class ShareModel implements IShareModel
         $page       = empty($page)  | $page     < 0 ? 0     : $page;
         $count      = empty($count) | $count    < 0 ? 10    : $count;
 
+        // 获取符合条件的标签
+
+
         // 图片获取主查询
         $sql    = DB::table( $this->_img_table )
-                    -> leftJoin( $this->_img_tag_table , $this->_img_table . '.img_key', '=', $this->_img_tag_table . '.img_key' )
+//                    -> leftJoin( $this->_img_tag_table , $this->_img_table . '.img_key', '=', $this->_img_tag_table . '.img_key' )
                     -> select( [ $this->_img_table . '.img_key', 'path' ] )
                     -> where( $this->_img_table . '.is_delete', 0 )
                     -> where( 'share_level', 3 );
@@ -463,7 +466,7 @@ class ShareModel implements IShareModel
 
         // 对查询进行分页查询和排序
         $imgList = $sql -> forPage($page, $count)
-                        -> orderBy( 'score', 'desc' )
+//                        -> orderBy( 'score', 'desc' )
                         -> get();
         // 格式化数据
         $imgList    = UtilsModel::changeMysqlResultToArr( $imgList );
@@ -485,6 +488,17 @@ class ShareModel implements IShareModel
         }
 
         return $imgList;
+    }
+
+    public function getSearchTagImg( $tabInfo, $keyword ){
+
+        // 标签搜索
+        if ( !empty($tabInfo) || !empty($keyword) ){
+            $searchImgKeyList = CommendModel::getTagImgKey( $tabInfo, $keyword );
+
+
+        }
+
     }
 
     private function recordSearch( array $params ){
