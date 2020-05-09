@@ -14,6 +14,7 @@ class Kernel extends ConsoleKernel
      */
     protected $commands = [
 //        \App\Console\Commands\DBTest::class,
+        \App\Console\Commands\WebSocketServer::class,
         \App\Console\Commands\ImgParseJob::class
     ];
 
