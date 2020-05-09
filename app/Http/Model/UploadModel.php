@@ -120,19 +120,28 @@ class UploadModel implements IUploadModel
         }
 
         // 图片标签解析
-        $model  = new ImgBuildTagModel( $imgKeys );
-        $code   = $model -> parseImg();
-        // 如果标签解析失败
-        if ( $code != CodeConf::OPT_SUCCESS ){
+//        $model  = new ImgBuildTagModel( $imgKeys );
+//        $code   = $model -> parseImg();
+//        // 如果标签解析失败
+//        if ( $code != CodeConf::OPT_SUCCESS ){
+//
+//            DB::rollBack();
+//            return ReturnInfoConf::getReturnTemp( $code );
+//
+//        }
 
-            DB::rollBack();
-            return ReturnInfoConf::getReturnTemp( $code );
-
-        }
+        $this->pushImgKeyIntoRedis($imgKeys);
 
         DB::commit();
         //操作成功
         return ReturnInfoConf::getReturnTemp(CodeConf::OPT_SUCCESS, ['url' => $path . '/' . $fileName]);
+    }
+
+    public function pushImgKeyIntoRedis( array $imgList ){
+        foreach ($imgList as $imgKey) {
+            \Redis::rpush( RedisHeadConf::getHead( 'wait_parse_img_keys' ), $imgKey );
+        }
+
     }
 
     private function checkDirIsUser( $dirId, $account ) {

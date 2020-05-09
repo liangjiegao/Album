@@ -41,6 +41,9 @@ class RedisHeadConf
             // 图片解析
             'img_build_tag_access_token'           => 'img_build_tag_access_token',
 
+            // 图片队列
+            'img_list'           => 'img_list',
+
 
         ];
 

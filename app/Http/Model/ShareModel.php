@@ -461,8 +461,6 @@ class ShareModel implements IShareModel
                 -> forPage($page, $count)
                 -> get();
             $hobbyImg    = UtilsModel::changeMysqlResultToArr( $hobbyImg );
-            \Log::info($hobbyImg);
-
         }
 
 

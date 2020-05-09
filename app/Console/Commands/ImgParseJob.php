@@ -1,14 +1,16 @@
 <?php
 
 
-namespace App\Jobs;
 
+namespace App\Console\Commands;
 
 use App\Http\Config\RedisHeadConf;
 use App\Http\Model\ImgBuildTagModel;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redis;
+use Illuminate\Console\Command;
 
-class ImgParseJob extends Job
+class ImgParseJob extends Command
 {
 
     /**
@@ -31,7 +33,9 @@ class ImgParseJob extends Job
      */
     public function __construct()
     {
-        //
+        DB::setDefaultConnection('mysql');
+        parent::__construct();
+
     }
 
     /**
@@ -41,10 +45,9 @@ class ImgParseJob extends Job
      */
     public function handle()
     {
-        \Log::info("运行");
         // 获取队列中待解析的图片keys
         $imgKeys = Redis::lrange( RedisHeadConf::getHead( 'wait_parse_img_keys' ), 0, -1 );
-
+        \Log::info($imgKeys);
         // 解析
         $model = new ImgBuildTagModel( $imgKeys );
         $model -> parseImg();

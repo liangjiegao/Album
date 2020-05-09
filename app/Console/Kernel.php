@@ -13,8 +13,8 @@ class Kernel extends ConsoleKernel
      * @var array
      */
     protected $commands = [
-        \App\Console\Commands\DBTest::class,
-//        \App\Jobs\ImgParseJob::class,
+//        \App\Console\Commands\DBTest::class,
+        \App\Console\Commands\ImgParseJob::class
     ];
 
     /**
@@ -27,7 +27,7 @@ class Kernel extends ConsoleKernel
     {
         // $schedule->command('inspire')
         //          ->hourly();
-//        $schedule -> command('parse:img_parse') -> withoutOverlapping() -> everyMinute();
+        $schedule -> command('parse:img_parse') -> withoutOverlapping() -> everyMinute();
 
     }
 
