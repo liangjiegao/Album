@@ -46,7 +46,8 @@ class ImgParseJob extends Command
     public function handle()
     {
         // 获取队列中待解析的图片keys
-        $imgKeys = Redis::lpop( RedisHeadConf::getHead( 'wait_parse_img_keys' ), 0, -1 );
+        $imgKeys = Redis::lrange( RedisHeadConf::getHead( 'wait_parse_img_keys' ), 0, -1 );
+        Redis::lrem( RedisHeadConf::getHead( 'wait_parse_img_keys' ) );
         \Log::info($imgKeys);
         // 解析
         $model = new ImgBuildTagModel( $imgKeys );
