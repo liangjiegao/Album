@@ -60,6 +60,7 @@ class WebSocketServer extends Command
 
         $server->on('WorkerStart', function ($server, $worker_id) use ($ob) {
             $server->tick(3000, function () use ($server, $ob) {
+                Log::info("通知");
                 $ob->pushMailToClient($server);
             });
         });
