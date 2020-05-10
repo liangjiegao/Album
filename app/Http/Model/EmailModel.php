@@ -25,7 +25,7 @@ class EmailModel implements IEmailModel
         $tagEmail       = $requestParams['tag_email'];
         $code           = $requestParams['code'];
         $type           = $requestParams['type'];
-        $setContent     = $requestParams['set_content'];
+        $setContent     = isset( $requestParams['set_content'] ) ? $requestParams['set_content'] : '';
 
         $regTitle   = $emailContentConf -> getTitle($type);
         $regContent = $emailContentConf -> getContent($code, $type, $setContent);
