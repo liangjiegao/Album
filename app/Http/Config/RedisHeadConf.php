@@ -44,8 +44,9 @@ class RedisHeadConf
             // 图片队列
             'img_list'           => 'img_list',
 
-            'websock_account_fd' => 'websock_account_fd'
+            'websock_account_fd' => 'websock_account_fd',
 
+            'upload_img_notice' => 'upload_img_notice'
         ];
 
         return isset($list[$key]) ? $list[$key] : "";
