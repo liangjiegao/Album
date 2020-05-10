@@ -46,6 +46,8 @@ class RedisHeadConf
 
             'websock_account_fd' => 'websock_account_fd',
 
+            'wait_parse_img_keys'   => 'wait_parse_img_keys',
+
             'upload_img_notice' => 'upload_img_notice'
         ];
 
