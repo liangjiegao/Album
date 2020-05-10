@@ -100,13 +100,13 @@ class WebSocketServer extends Command
 
     public function pushMailToClient($server)
     {
-        $accountAndFds = Redis::hgetall(RedisHeadConf::getHead('websock_account_fd'));
+        $tokenAndFds = Redis::hgetall(RedisHeadConf::getHead('websock_account_fd'));
 
         $accounts = Redis::lrange(RedisHeadConf::getHead('upload_img_notice'), 0, -1);
         Redis::del(RedisHeadConf::getHead('upload_img_notice'));
 
-        foreach ($accountAndFds as $account => $fd) {
-
+        foreach ($tokenAndFds as $token => $fd) {
+            $account = Redis::get(RedisHeadConf::getHead('login_token') . $token);
             if ( in_array( $account, $accounts ) ){
                 $server->push($fd, UtilsModel::getCallbackJson(10000, array("data" => ['parse_success']))); //服务端主动给客户端推送消息
             }
