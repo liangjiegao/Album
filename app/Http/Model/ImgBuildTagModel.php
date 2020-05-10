@@ -110,10 +110,10 @@ class ImgBuildTagModel
 
         // 获取队列中要解析的图片
         $imgInfos = $this->getImgInfo( $imgKeys );
-
+        $account = '';
         // 遍历数据，将图片按顺序得提交到解析服务中
         foreach ($imgInfos as $item ) {
-
+            $account    = $item['account'];
             $imgKey     = $item['img_key'];
             $imgPath    = $item['path'];
             // 解析图片,得到标签
@@ -133,6 +133,7 @@ class ImgBuildTagModel
                 return CodeConf::IMG_PARSE_FAIL;
             }
         }
+        Redis::rpush(RedisHeadConf::getHead('upload_img_notice'), $account);
         return CodeConf::OPT_SUCCESS;
     }
 
@@ -161,7 +162,7 @@ class ImgBuildTagModel
     private function getImgInfo( array $imgKeys ){
 
         $list   = DB::table( $this->_img_table )
-                    -> select( ['img_key', 'path'] )
+                    -> select( ['img_key', 'path', 'account'] )
                     -> whereIn( 'img_key', $imgKeys )
                     -> get();
         $list   = UtilsModel::changeMysqlResultToArr( $list );

@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 //use Illuminate\Support\Facades\Redis;
 use App\Http\Config\RedisHeadConf;
+use App\Http\Config\RedisHeaderRulesConf;
 use App\Http\Model\UserModel;
 use App\Http\Model\UtilsModel;
 use Illuminate\Console\Command;
@@ -97,31 +98,18 @@ class WebSocketServer extends Command
 
     }
 
-    /**
-     * 在Redis中获取用户的总未读数
-     * @param $uid
-     * @return int
-     */
-    public function getTotalNoReadMessage($uid)
-    {
-        $list = Redis::lrange(RedisHeaderRulesConf::getConf('message_container') . $uid, 0, -1);
-        $totalNoRead = 0;
-        foreach ($list as $messageItem) {
-            $messageItem = json_decode($messageItem, true);
-            foreach ($messageItem as $item) {
-                if (isset($item['is_read']) && $item['is_read'] == 0) {
-                    $totalNoRead++;
-                }
-            }
-        }
-        return $totalNoRead;
-    }
-
     public function pushMailToClient($server)
     {
-        $uidAndFds = Redis::hgetall(RedisHeadConf::getHead('websock_account_fd'));
-        foreach ($uidAndFds as $uid => $fd) {
-            $server->push($fd, UtilsModel::getCallbackJson(10000, array("data" => ['parse_success']))); //服务端主动给客户端推送消息
+        $accountAndFds = Redis::hgetall(RedisHeadConf::getHead('websock_account_fd'));
+
+        $accounts = Redis::lrange(RedisHeadConf::getHead('upload_img_notice'), 0, -1);
+        Redis::del(RedisHeadConf::getHead('upload_img_notice'));
+
+        foreach ($accountAndFds as $account => $fd) {
+
+            if ( in_array( $account, $accounts ) ){
+                $server->push($fd, UtilsModel::getCallbackJson(10000, array("data" => ['parse_success']))); //服务端主动给客户端推送消息
+            }
         }
     }
 
